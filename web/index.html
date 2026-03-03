@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Weather Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+<header>
+    <h1>Weather Application</h1>
+    <p>CSCE 548 - Building Secure Software</p>
+</header>
+
+<section class="controls">
+    <button onclick="loadWeather()">Load Weather</button>
+    <button onclick="loadAlerts()">Load Alerts</button>
+    <button onclick="loadLocations()">Load Locations</button>
+</section>
+
+<section class="results">
+    <h2>Service Output</h2>
+    <textarea id="output">Click a button to load data...</textarea>
+</section>
+
+<footer>
+    &copy; 2026 Hardik Marlapudi. All Rights Reserved.
+</footer>
+
+<script src="script.js"></script>
+
+</body>
+</html>

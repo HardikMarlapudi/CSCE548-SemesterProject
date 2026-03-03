@@ -1,16 +1,36 @@
 public class Location {
+
     private int locationId;
     private String city;
     private String state;
     private String country;
 
+    // ==========================
+    // Constructor (Secure)
+    // ==========================
     public Location(int locationId, String city, String state, String country) {
+
+        if (city == null || city.isBlank()) {
+            throw new IllegalArgumentException("City cannot be empty");
+        }
+
+        if (state == null || state.isBlank()) {
+            throw new IllegalArgumentException("State cannot be empty");
+        }
+
+        if (country == null || country.isBlank()) {
+            throw new IllegalArgumentException("Country cannot be empty");
+        }
+
         this.locationId = locationId;
-        this.city = city;
-        this.state = state;
-        this.country = country;
+        this.city = city.trim();
+        this.state = state.trim();
+        this.country = country.trim();
     }
 
+    // ==========================
+    // Getters
+    // ==========================
     public int getLocationId() {
         return locationId;
     }
@@ -27,36 +47,45 @@ public class Location {
         return country;
     }
 
-    public String toString() {
-        return locationId + ": " + city + ", " + state + ", " + country;
-    }
-
-    /**
-     * @param locationId the locationId to set
-     */
+    // ==========================
+    // Setters (Secure Validation)
+    // ==========================
     public void setLocationId(int locationId) {
         this.locationId = locationId;
     }
 
-    /**
-     * @param city the city to set
-     */
     public void setCity(String city) {
-        this.city = city;
+
+        if (city == null || city.isBlank()) {
+            throw new IllegalArgumentException("City cannot be empty");
+        }
+
+        this.city = city.trim();
     }
 
-    /**
-     * @param state the state to set
-     */
     public void setState(String state) {
-        this.state = state;
+
+        if (state == null || state.isBlank()) {
+            throw new IllegalArgumentException("State cannot be empty");
+        }
+
+        this.state = state.trim();
     }
 
-    /**
-     * @param country the country to set
-     */
     public void setCountry(String country) {
-        this.country = country;
+
+        if (country == null || country.isBlank()) {
+            throw new IllegalArgumentException("Country cannot be empty");
+        }
+
+        this.country = country.trim();
     }
 
+    // ==========================
+    // toString Override
+    // ==========================
+    @Override
+    public String toString() {
+        return locationId + ": " + city + ", " + state + ", " + country;
+    }
 }

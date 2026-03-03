@@ -2,13 +2,24 @@ public class WeatherCondition {
 
     private int conditionId;
     private String description;
-    
+
+    // =====================
+    // Default Constructor
+    // =====================
+    public WeatherCondition() {}
+
+    // =====================
+    // Parameterized Constructor
+    // =====================
     public WeatherCondition(int conditionId, String description) {
-        this.conditionId = conditionId;
-        this.description = description;
+        setConditionId(conditionId);
+        setDescription(description);
     }
 
-    public int getCondition() {
+    // =====================
+    // Getters
+    // =====================
+    public int getConditionId() {
         return conditionId;
     }
 
@@ -16,29 +27,28 @@ public class WeatherCondition {
         return description;
     }
 
-    public String toString() {
-        return conditionId + ": " + description;
-    }
-
-    /**
-     * @return int return the conditionId
-     */
-    public int getConditionId() {
-        return conditionId;
-    }
-
-    /**
-     * @param conditionId the conditionId to set
-     */
+    // =====================
+    // Setters (Validated)
+    // =====================
     public void setConditionId(int conditionId) {
+        if (conditionId < 0)
+            throw new IllegalArgumentException("Invalid condition ID");
+
         this.conditionId = conditionId;
     }
 
-    /**
-     * @param description the description to set
-     */
     public void setDescription(String description) {
-        this.description = description;
+        if (description == null || description.trim().isEmpty())
+            throw new IllegalArgumentException("Description required");
+
+        this.description = description.trim();
     }
 
+    // =====================
+    // toString
+    // =====================
+    @Override
+    public String toString() {
+        return conditionId + ": " + description;
+    }
 }

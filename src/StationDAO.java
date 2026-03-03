@@ -1,26 +1,35 @@
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class StationDAO {
 
-    public List<String> getAllStations() {
-        List<String> stations = new ArrayList<>();
-        String sql = "SELECT * FROM stations";
+    // =====================
+    // READ ALL STATIONS
+    // =====================
+    public List<Station> getAllStations() throws Exception {
+
+        List<Station> stations = new ArrayList<>();
+
+        String sql =
+                "SELECT station_id, station_name, location_name FROM stations";
 
         try (Connection conn = DBConnection.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                stations.add(
-                    rs.getInt("station_id") + " | " +
-                    rs.getString("station_name") + " | " +
-                    rs.getString("location_name")
+
+                Station station = new Station(
+                        rs.getInt("station_id"),
+                        rs.getString("station_name"),
+                        rs.getString("location_name")
                 );
+
+                stations.add(station);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
+
         return stations;
     }
 }

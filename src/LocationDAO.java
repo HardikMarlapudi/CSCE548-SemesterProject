@@ -1,13 +1,15 @@
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
 import java.util.ArrayList;
 
 public class LocationDAO {
 
-    // CREATE: add a new location
+    // ======================
+    // CREATE
+    // ======================
     public void addLocation(Location location) {
-        String sql = "INSERT INTO locations (city, state, country) VALUES (?, ?, ?)";
+
+        String sql =
+            "INSERT INTO locations (city, state, country) VALUES (?, ?, ?)";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -17,21 +19,28 @@ public class LocationDAO {
             ps.setString(3, location.getCountry());
 
             ps.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to add location", e);
         }
     }
 
-    // READ: get all locations
+    // ======================
+    // READ ALL
+    // ======================
     public ArrayList<Location> getAllLocations() {
+
         ArrayList<Location> locations = new ArrayList<>();
-        String sql = "SELECT * FROM locations";
+
+        String sql =
+            "SELECT location_id, city, state, country FROM locations";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
+
                 locations.add(new Location(
                         rs.getInt("location_id"),
                         rs.getString("city"),
@@ -39,41 +48,53 @@ public class LocationDAO {
                         rs.getString("country")
                 ));
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to retrieve locations", e);
         }
 
         return locations;
     }
 
-    // READ: get a single location by ID
+    // ======================
+    // READ BY ID
+    // ======================
     public Location getLocationById(int locationId) {
-        String sql = "SELECT * FROM locations WHERE location_id = ?";
+
+        String sql =
+            "SELECT location_id, city, state, country FROM locations WHERE location_id=?";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, locationId);
-            ResultSet rs = ps.executeQuery();
 
-            if (rs.next()) {
-                return new Location(
-                        rs.getInt("location_id"),
-                        rs.getString("city"),
-                        rs.getString("state"),
-                        rs.getString("country")
-                );
+            try (ResultSet rs = ps.executeQuery()) {
+
+                if (rs.next()) {
+                    return new Location(
+                            rs.getInt("location_id"),
+                            rs.getString("city"),
+                            rs.getString("state"),
+                            rs.getString("country")
+                    );
+                }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to retrieve location", e);
         }
 
         return null;
     }
 
-    // UPDATE: update a location
+    // ======================
+    // UPDATE
+    // ======================
     public void updateLocation(Location location) {
-        String sql = "UPDATE locations SET city = ?, state = ?, country = ? WHERE location_id = ?";
+
+        String sql =
+            "UPDATE locations SET city=?, state=?, country=? WHERE location_id=?";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -84,22 +105,28 @@ public class LocationDAO {
             ps.setInt(4, location.getLocationId());
 
             ps.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to update location", e);
         }
     }
 
-    // DELETE: remove a location
+    // ======================
+    // DELETE
+    // ======================
     public void deleteLocation(int locationId) {
-        String sql = "DELETE FROM locations WHERE location_id = ?";
+
+        String sql =
+            "DELETE FROM locations WHERE location_id=?";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, locationId);
             ps.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to delete location", e);
         }
     }
 }

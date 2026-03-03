@@ -10,87 +10,123 @@ public class WeatherRecord {
     private int humidity;
     private Date recordDate;
 
-    public WeatherRecord(String cityName, String stationName, String conditionName, double temperature, int humidity, Date recordDate) {
-        this.cityName = cityName;
-        this.stationName = stationName;
-        this.conditionName = conditionName;
-        this.temperature = temperature;
-        this.humidity = humidity;
-        this.recordDate = recordDate;
+    // =====================
+    // Default Constructor
+    // =====================
+    public WeatherRecord() {}
+
+    // =====================
+    // Parameterized Constructor
+    // =====================
+    public WeatherRecord(String cityName,
+                         String stationName,
+                         String conditionName,
+                         double temperature,
+                         int humidity,
+                         Date recordDate) {
+
+        setCityName(cityName);
+        setStationName(stationName);
+        setConditionName(conditionName);
+        setTemperature(temperature);
+        setHumidity(humidity);
+        setRecordDate(recordDate);
     }
 
-    public int getRecordId() { 
-        return recordId; 
+    // =====================
+    // Getters
+    // =====================
+    public int getRecordId() {
+        return recordId;
     }
 
-    public void setRecordId(int recordId) { 
-        this.recordId = recordId; 
+    public String getCityName() {
+        return cityName;
     }
 
-    public String getCityName() { 
-        return cityName; 
+    public String getStationName() {
+        return stationName;
     }
 
-    public String getStationName() { 
-        return stationName; 
+    public String getConditionName() {
+        return conditionName;
     }
 
-    public String getConditionName() { 
-        return conditionName; 
+    public double getTemperature() {
+        return temperature;
     }
 
-    public double getTemperature() { 
-        return temperature; 
+    public int getHumidity() {
+        return humidity;
     }
 
-    public int getHumidity() { 
-        return humidity; 
+    public Date getRecordDate() {
+        return recordDate;
     }
 
-    public Date getRecordDate() { 
-        return recordDate; 
+    // =====================
+    // Setters with Validation
+    // =====================
+    public void setRecordId(int recordId) {
+        if (recordId < 0)
+            throw new IllegalArgumentException("Invalid record ID");
+
+        this.recordId = recordId;
     }
 
-    /**
-     * @param cityName the cityName to set
-     */
     public void setCityName(String cityName) {
-        this.cityName = cityName;
+        if (cityName == null || cityName.trim().isEmpty())
+            throw new IllegalArgumentException("City name required");
+
+        this.cityName = cityName.trim();
     }
 
-    /**
-     * @param stationName the stationName to set
-     */
     public void setStationName(String stationName) {
-        this.stationName = stationName;
+        if (stationName == null || stationName.trim().isEmpty())
+            throw new IllegalArgumentException("Station name required");
+
+        this.stationName = stationName.trim();
     }
 
-    /**
-     * @param conditionName the conditionName to set
-     */
     public void setConditionName(String conditionName) {
-        this.conditionName = conditionName;
+        if (conditionName == null || conditionName.trim().isEmpty())
+            throw new IllegalArgumentException("Condition required");
+
+        this.conditionName = conditionName.trim();
     }
 
-    /**
-     * @param temperature the temperature to set
-     */
     public void setTemperature(double temperature) {
+        if (temperature < -100 || temperature > 150)
+            throw new IllegalArgumentException("Invalid temperature");
+
         this.temperature = temperature;
     }
 
-    /**
-     * @param humidity the humidity to set
-     */
     public void setHumidity(int humidity) {
+        if (humidity < 0 || humidity > 100)
+            throw new IllegalArgumentException("Invalid humidity");
+
         this.humidity = humidity;
     }
 
-    /**
-     * @param recordDate the recordDate to set
-     */
     public void setRecordDate(Date recordDate) {
+        if (recordDate == null)
+            throw new IllegalArgumentException("Date required");
+
         this.recordDate = recordDate;
     }
 
+    // =====================
+    // toString()
+    // =====================
+    @Override
+    public String toString() {
+        return recordId +
+               " | City: " + cityName +
+               " | Station: " + stationName +
+               " | Condition: " + conditionName +
+               " | Temp: " + temperature +
+               " | Humidity: " + humidity +
+               " | Date: " + recordDate;
+    }
 }
