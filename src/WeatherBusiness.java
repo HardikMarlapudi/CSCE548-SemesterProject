@@ -31,6 +31,20 @@ public class WeatherBusiness {
     }
 
     // =====================
+    // EDIT
+    // =====================
+
+    public void updateWeatherRecord(int editId, WeatherRecord updatedRecord) {
+        validateRecord(updatedRecord);
+
+        try {
+            weatherDAO.updateRecord(editId, updatedRecord);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to update record");
+        }
+    }
+
+    // =====================
     // DELETE
     // =====================
     public void deleteWeatherRecord(int id) {

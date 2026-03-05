@@ -15,15 +15,37 @@
 </header>
 
 <section class="controls">
-    <button onclick="loadWeather()">Load Weather</button>
+    <button onclick="loadWeather()">Load Weather (JSON)</button>
+    <button onclick="loadWeatherUI()">Load Weather (UI)</button>
     <button onclick="loadAlerts()">Load Alerts</button>
     <button onclick="loadLocations()">Load Locations</button>
 </section>
 
+<div style="text-align: center;">
+<h2>Weather Cards</h2>
+<div id="weatherSection"></div><br>
+</div>
 <section class="results">
     <h2>Service Output</h2>
     <textarea id="output">Click a button to load data...</textarea>
 </section>
+
+<h3 id="weatherRecordsTitle">Manage Weather Records</h3>
+
+<input type="number" id="recordId" type="number" placeholder="Record ID (for Edit/Delete)">
+
+<input id="city" placeholder="City">
+<input id="station" placeholder="Station">
+<input id="condition" placeholder="Condition">
+<input id="temperature" type="number" placeholder="Temperature">
+<input id="humidity" type="number" placeholder="Humidity">
+<input id="date" type="date">
+
+<br><br>
+
+<button onclick="addRecord()">Add Record (POST)</button>
+<button onclick="updateRecord()">Edit Record (PUT)</button>
+<button onclick="deleteRecord()">Delete Record (DELETE)</button>
 
 <footer>
     &copy; 2026 Hardik Marlapudi. All Rights Reserved.

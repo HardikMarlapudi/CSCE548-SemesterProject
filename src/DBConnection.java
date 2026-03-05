@@ -7,16 +7,13 @@ public class DBConnection {
     private static final String URL =
         "jdbc:mysql://localhost:3306/weather_db?serverTimezone=UTC";
 
-    // Read credentials securely from environment variables
-    private static final String USER =
-        System.getenv().getOrDefault("DB_USER", "root");
+    private static final String USER = "root";
 
-    private static final String PASSWORD =
-        System.getenv().getOrDefault("DB_PASSWORD", "");
+    // PUT YOUR REAL MYSQL PASSWORD HERE
+    private static final String PASSWORD = "root123";
 
     static {
         try {
-            // Explicitly load MySQL driver
             Class.forName("com.mysql.cj.jdbc.Driver");
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("MySQL Driver not found", e);
@@ -27,12 +24,8 @@ public class DBConnection {
 
         try {
             return DriverManager.getConnection(URL, USER, PASSWORD);
-
         } catch (SQLException e) {
-
-            // Prevent leaking DB details
-            throw new RuntimeException(
-                "Database connection failed. Check configuration.", e);
+            throw new RuntimeException("Database connection failed", e);
         }
     }
 }
