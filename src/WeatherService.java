@@ -4,6 +4,10 @@ import java.net.*;
 
 public class WeatherService {
 
+    private String city;
+    private double temperature;
+    private double humidity;
+
     private WeatherRecordDAO dao = new WeatherRecordDAO();
 
     public void startService() throws Exception {
@@ -51,7 +55,7 @@ public class WeatherService {
                         URLDecoder.decode(query.substring(5), "UTF-8");
 
                     response =
-                        dao.getRecordsByCity(city).toString();
+                        JsonUtil.toJson(dao.getRecordsByCity(city));
 
                 }
                 else if (path.matches("/weather/\\d+")) {
@@ -66,11 +70,11 @@ public class WeatherService {
                         statusCode = 404;
                         response = "Record not found";
                     } else {
-                        response = record.toString();
+                        response = JsonUtil.toJson(java.util.List.of(record));
                     }
                 }
                 else {
-                    response = dao.getAllRecords().toString();
+                    response = JsonUtil.toJson(dao.getAllRecords());
                 }
             }
 
@@ -87,7 +91,7 @@ public class WeatherService {
                 dao.addRecord(r);
 
                 statusCode = 201;
-                response = "Record Created";
+                response = JsonUtil.toJson(dao.getAllRecords());
             }
 
             // =====================
@@ -106,21 +110,24 @@ public class WeatherService {
 
                 dao.updateRecord(id, r);
 
-                response = "Record Updated";
+                response = JsonUtil.toJson(dao.getAllRecords());
             }
 
             // =====================
             // DELETE
             // =====================
             else if (method.equals("DELETE")
-                    && path.matches("/weather/\\d+")) {
-
-                int id =
-                    Integer.parseInt(path.replace("/weather/", ""));
-
-                dao.deleteRecord(id);
-
-                response = "Record Deleted";
+                && path.matches("/weather/\\d+")) {
+        
+            int id =
+                Integer.parseInt(path.replace("/weather/", ""));
+        
+            dao.deleteRecord(id);
+        
+            // reorder IDs after delete
+            dao.reorderIds();
+        
+            response = JsonUtil.toJson(dao.getAllRecords());
             }
 
             else {
@@ -177,15 +184,40 @@ public class WeatherService {
     private static class JsonUtil {
 
         public static WeatherRecord fromJson(String json) {
+
             String cityName = extractValue(json, "cityName");
             String stationName = extractValue(json, "stationName");
             String conditionName = extractValue(json, "conditionName");
-            double temperature = Double.parseDouble(extractValue(json, "temperature"));
-            int humidity = Integer.parseInt(extractValue(json, "humidity"));
+        
+            String tempStr = extractValue(json, "temperature");
+            double temperature = 0.0;
+        
+            if (tempStr != null && !tempStr.equals("") && !tempStr.equals("null")) {
+                temperature = Double.parseDouble(tempStr);
+            }
+        
+            String humidityStr = extractValue(json, "humidity");
+            int humidity = 0;
+        
+            if (humidityStr != null && !humidityStr.equals("") && !humidityStr.equals("null")) {
+                humidity = Integer.parseInt(humidityStr);
+            }
+        
             String dateStr = extractValue(json, "recordDate");
-            java.sql.Date recordDate = java.sql.Date.valueOf(dateStr);
-            
-            return new WeatherRecord(cityName, stationName, conditionName, temperature, humidity, recordDate);
+            java.sql.Date recordDate = null;
+        
+            if (dateStr != null && !dateStr.equals("") && !dateStr.equals("null")) {
+                recordDate = java.sql.Date.valueOf(dateStr);
+            }
+        
+            return new WeatherRecord(
+                cityName,
+                stationName,
+                conditionName,
+                temperature,
+                humidity,
+                recordDate
+            );
         }
 
         private static String extractValue(String json, String key) {
@@ -204,5 +236,70 @@ public class WeatherService {
             int end = json.indexOf("\"", start);
             return json.substring(start, end);
         }
+
+        public static String toJson(java.util.List<WeatherRecord> list) {
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("[\n");
+        
+            for (int i = 0; i < list.size(); i++) {
+        
+                WeatherRecord r = list.get(i);
+        
+                sb.append("  {\n")
+                  .append("    \"recordId\": ").append(r.getRecordId()).append(",\n")
+                  .append("    \"cityName\": \"").append(r.getCityName()).append("\",\n")
+                  .append("    \"stationName\": \"").append(r.getStationName()).append("\",\n")
+                  .append("    \"conditionName\": \"").append(r.getConditionName()).append("\",\n")
+                  .append("    \"temperature\": ").append(r.getTemperature()).append(",\n")
+                  .append("    \"humidity\": ").append(r.getHumidity()).append(",\n")
+                  .append("    \"recordDate\": \"").append(r.getRecordDate()).append("\"\n")
+                  .append("  }");
+        
+                if (i < list.size() - 1)
+                    sb.append(",");
+        
+                sb.append("\n");
+            }
+        
+            sb.append("]");
+            return sb.toString();
+        }
     }
+
+    /**
+     * @param city the city to set
+     */
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    /**
+     * @param temperature the temperature to set
+     */
+    public void setTemperature(double temperature) {
+        this.temperature = temperature;
+    }
+
+    /**
+     * @param humidity the humidity to set
+     */
+    public void setHumidity(double humidity) {
+        this.humidity = humidity;
+    }
+
+    /**
+     * @return WeatherRecordDAO return the dao
+     */
+    public WeatherRecordDAO getDao() {
+        return dao;
+    }
+
+    /**
+     * @param dao the dao to set
+     */
+    public void setDao(WeatherRecordDAO dao) {
+        this.dao = dao;
+    }
+
 }

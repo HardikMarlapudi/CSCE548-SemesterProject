@@ -1,9 +1,20 @@
 INSERT INTO weather_records
 (city_name, station_name, condition_name, temperature, humidity, record_date)
-VALUES
-('Columbia','Downtown Station','Sunny',72.5,55,'2025-01-01'),
-('Columbia','Campus Station','Cloudy',70.1,60,'2025-01-02'),
-('Columbia','Campus Station','Rainy',66.4,78,'2025-01-03'),
-('New York','Central Park Station','Sunny',38.1,60,'2025-01-04'),
-('New York','Times Square Station','Cloudy',37.0,66,'2025-01-05'),
-('New York','Times Square Station','Rainy',36.4,75,'2025-01-06');
+SELECT
+    CASE WHEN seq % 2 = 0 THEN 'Columbia' ELSE 'New York' END,
+    CASE WHEN seq % 2 = 0 THEN 'Campus Station' ELSE 'Times Square Station' END,
+    CASE 
+        WHEN seq % 3 = 0 THEN 'Sunny'
+        WHEN seq % 3 = 1 THEN 'Cloudy'
+        ELSE 'Rainy'
+    END,
+    60 + FLOOR(RAND()*30),
+    40 + FLOOR(RAND()*50),
+    DATE_ADD('2025-02-01', INTERVAL seq DAY)
+FROM (
+    SELECT @row := @row + 1 AS seq
+    FROM (SELECT 0 UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) t1,
+         (SELECT 0 UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4) t2,
+         (SELECT @row := 0) t3
+    LIMIT 44
+) numbers;

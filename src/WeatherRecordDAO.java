@@ -13,7 +13,8 @@ public class WeatherRecordDAO {
 
         String sql =
             "SELECT record_id, city_name, station_name, condition_name, " +
-            "temperature, humidity, record_date FROM weather_records";
+            "temperature, humidity, record_date " +
+            "FROM weather_records ORDER BY record_id ASC";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -44,11 +45,10 @@ public class WeatherRecordDAO {
     // =====================
     public WeatherRecord getRecordById(int id) throws Exception {
 
-        if (id <= 0)
-            throw new IllegalArgumentException("Invalid ID");
-
         String sql =
-            "SELECT * FROM weather_records WHERE record_id=?";
+            "SELECT record_id, city_name, station_name, condition_name, " +
+            "temperature, humidity, record_date " +
+            "FROM weather_records WHERE record_id = ?";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -85,18 +85,18 @@ public class WeatherRecordDAO {
         String sql =
             "INSERT INTO weather_records " +
             "(city_name, station_name, condition_name, temperature, humidity, record_date) " +
-            "VALUES (?,?,?,?,?,?)";
-
+            "VALUES (?, ?, ?, ?, ?, ?)";
+    
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-
+    
             ps.setString(1, r.getCityName());
             ps.setString(2, r.getStationName());
             ps.setString(3, r.getConditionName());
             ps.setDouble(4, r.getTemperature());
             ps.setInt(5, r.getHumidity());
             ps.setDate(6, r.getRecordDate());
-
+    
             ps.executeUpdate();
         }
     }
@@ -105,9 +105,6 @@ public class WeatherRecordDAO {
     // UPDATE
     // =====================
     public void updateRecord(int id, WeatherRecord r) throws Exception {
-
-        if (id <= 0)
-            throw new IllegalArgumentException("Invalid ID");
 
         String sql =
             "UPDATE weather_records SET " +
@@ -135,17 +132,36 @@ public class WeatherRecordDAO {
     // =====================
     public void deleteRecord(int id) throws Exception {
 
-        if (id <= 0)
-            throw new IllegalArgumentException("Invalid ID");
-
-        String sql =
-            "DELETE FROM weather_records WHERE record_id=?";
-
+        String sql = "DELETE FROM weather_records WHERE record_id=?";
+    
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-
+    
             ps.setInt(1, id);
             ps.executeUpdate();
+        }
+    
+        reorderIds();
+    }
+
+    // =====================
+    // REORDER IDS
+    // =====================
+
+    public void reorderIds() throws Exception {
+
+        try (Connection conn = DBConnection.getConnection();
+             Statement stmt = conn.createStatement()) {
+    
+            stmt.execute("SET @count = 0");
+    
+            stmt.executeUpdate(
+                "UPDATE weather_records SET record_id = (@count := @count + 1)"
+            );
+    
+            stmt.execute(
+                "ALTER TABLE weather_records AUTO_INCREMENT = 1"
+            );
         }
     }
 
@@ -157,7 +173,9 @@ public class WeatherRecordDAO {
         List<WeatherRecord> list = new ArrayList<>();
 
         String sql =
-            "SELECT * FROM weather_records WHERE city_name=?";
+            "SELECT record_id, city_name, station_name, condition_name, " +
+            "temperature, humidity, record_date " +
+            "FROM weather_records WHERE city_name=? ORDER BY record_id ASC";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
