@@ -2,52 +2,64 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <title>Weather Dashboard</title>
-    <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8">
+<title>Weather Dashboard</title>
+<link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
 
 <header>
-    <h1>Weather Application</h1>
-    <p>CSCE 548 - Building Secure Software</p>
+<h1>Weather Application</h1>
+<p>CSCE 548 - Building Secure Software</p>
 </header>
 
 <section class="controls">
-    <button id="loadWeatherJSON" onclick="loadWeatherJSON()">Load Weather (JSON)</button>
-    <button id="loadWeatherui" onclick="loadWeatherUI()">Load Weather (UI)</button>
-    <button id ="loadAlert" onclick="loadAlerts()">Load Alerts</button>
-    <button id ="loadLocation" onclick="loadLocations()">Load Locations</button>
+<button onclick="loadWeatherUI()">Load Weather (UI)</button>
+<button onclick="loadWeatherJSON()">Load Weather (JSON)</button>
 </section>
 
+<div id="weatherSection"></div>
 
-<h2>Weather Cards</h2>
+<h2>Weather Records Table</h2>
 
-<div id="weatherSection"></div><br>
+<table id="weatherTable">
+<thead>
+<tr>
+<th>ID</th>
+<th>City</th>
+<th>State</th>
+<th>Condition</th>
+<th>Temperature</th>
+<th>Humidity</th>
+<th>Date</th>
+</tr>
+</thead>
 
-<section class="results">
-    <h2>Service Output</h2>
-    <textarea id="output">Click a button to load data...</textarea>
-    <div id="weatherRecords"></div>
-</section>
+<tbody id="weatherTableBody"></tbody>
+</table>
 
-<h3 id="weatherRecordsTitle">Manage Weather Records</h3>
+<section class="weatherRecords">
+<h3>Manage Weather Records</h3>
 
-<input type="number" id="recordId" type="number" placeholder="Record ID (for Edit/Delete)">
+<div class="form-container">
 
+<input type="number" id="recordId" placeholder="Record ID (Edit/Delete)">
 <input id="city" placeholder="City">
 <input id="state" placeholder="State">
 <input id="condition" placeholder="Condition">
-<input id="temperature" type="number" placeholder="Temperature">
-<input id="humidity" type="number" placeholder="Humidity">
-<input id="date" type="date">
+<input type="number" id="temperature" placeholder="Temperature">
+<input type="number" id="humidity" placeholder="Humidity">
+<input type="date" id="date">
 
-<br><br>
+</div>
 
-<button onclick="addRecord()">Add Record (POST)</button>
-<button onclick="updateRecord()">Edit Record (PUT)</button>
-<button onclick="deleteRecord()">Delete Record (DELETE)</button>
+<div class="controls">
+<button onclick="addRecord()">Add Record</button>
+<button onclick="updateRecord()">Update Record</button>
+<button onclick="deleteRecord()">Delete Record</button>
+</div>
+</section>
 
 <footer>
     &copy; 2026 Hardik Marlapudi. All Rights Reserved.
