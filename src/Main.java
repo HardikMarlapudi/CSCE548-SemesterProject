@@ -17,10 +17,11 @@ public class Main {
                 System.out.println("\nWeather Management System");
                 System.out.println("1. View Weather Records");
                 System.out.println("2. Add Weather Record");
-                System.out.println("3. Delete Weather Record");
-                System.out.println("4. View Alerts");
-                System.out.println("5. Add Alert");
-                System.out.println("6. Exit");
+                System.out.println("3. Edit Weather Record");
+                System.out.println("4. Delete Weather Record");
+                System.out.println("5. View Alerts");
+                System.out.println("6. Add Alert");
+                System.out.println("7. Exit");
                 System.out.print("Choice: ");
 
                 String input = scanner.nextLine();
@@ -83,8 +84,61 @@ public class Main {
 
                         System.out.println("Weather record added.");
                         break;
-
+                    
                     case 3:
+
+                        System.out.print("Enter Record ID to edit: ");
+                    
+                        int editId;
+                        try {
+                            editId = Integer.parseInt(scanner.nextLine());
+                        } catch (Exception e) {
+                            System.out.println("Invalid ID.");
+                            break;
+                        }
+                    
+                        System.out.print("New City name: ");
+                        String cityName = scanner.nextLine().trim();
+                    
+                        System.out.print("New Station name: ");
+                        String stationName = scanner.nextLine().trim();
+                    
+                        System.out.print("New Condition: ");
+                        String conditionName = scanner.nextLine().trim();
+                    
+                        System.out.print("New Temperature: ");
+                        double tempEdit;
+                        try {
+                            tempEdit = Double.parseDouble(scanner.nextLine());
+                        } catch (Exception e) {
+                            System.out.println("Invalid temperature.");
+                            break;
+                        }
+                    
+                        System.out.print("New Humidity: ");
+                        int humidityEdit;
+                        try {
+                            humidityEdit = Integer.parseInt(scanner.nextLine());
+                        } catch (Exception e) {
+                            System.out.println("Invalid humidity.");
+                            break;
+                        }
+                    
+                        WeatherRecord updatedRecord =
+                            new WeatherRecord(
+                                cityName,
+                                stationName,
+                                conditionName,
+                                tempEdit,
+                                humidityEdit,
+                                new Date(System.currentTimeMillis())
+                            );
+                    
+                        weatherBusiness.updateWeatherRecord(editId, updatedRecord);
+                        System.out.println("Weather record updated.");
+                        break;
+
+                    case 4:
 
                         System.out.print("Record ID to delete: ");
 
@@ -101,12 +155,12 @@ public class Main {
 
                         break;
 
-                    case 4:
+                    case 5:
                         alertBusiness.getAllAlerts()
                                 .forEach(System.out::println);
                         break;
 
-                    case 5:
+                    case 6:
 
                         System.out.print("Location name: ");
                         String location = scanner.nextLine().trim();
@@ -120,7 +174,7 @@ public class Main {
                         System.out.println("Alert added.");
                         break;
 
-                    case 6:
+                    case 7:
                         System.out.println("Goodbye!");
                         scanner.close();
                         return;

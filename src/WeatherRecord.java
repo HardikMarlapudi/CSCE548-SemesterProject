@@ -4,7 +4,7 @@ public class WeatherRecord {
 
     private int recordId;
     private String cityName;
-    private String stationName;
+    private String stateName;
     private String conditionName;
     private double temperature;
     private int humidity;
@@ -19,14 +19,14 @@ public class WeatherRecord {
     // Parameterized Constructor
     // =====================
     public WeatherRecord(String cityName,
-                         String stationName,
+                         String stateName,
                          String conditionName,
                          double temperature,
                          int humidity,
                          Date recordDate) {
 
         setCityName(cityName);
-        setStationName(stationName);
+        setStateName(stateName);
         setConditionName(conditionName);
         setTemperature(temperature);
         setHumidity(humidity);
@@ -44,8 +44,8 @@ public class WeatherRecord {
         return cityName;
     }
 
-    public String getStationName() {
-        return stationName;
+    public String getStateName() {
+        return stateName;
     }
 
     public String getConditionName() {
@@ -81,11 +81,11 @@ public class WeatherRecord {
         this.cityName = cityName.trim();
     }
 
-    public void setStationName(String stationName) {
-        if (stationName == null || stationName.trim().isEmpty())
+    public void setStateName(String stateName) {
+        if (stateName == null || stateName.trim().isEmpty())
             throw new IllegalArgumentException("Station name required");
 
-        this.stationName = stationName.trim();
+        this.stateName = stateName.trim();
     }
 
     public void setConditionName(String conditionName) {
@@ -123,7 +123,7 @@ public class WeatherRecord {
     public String toString() {
         return recordId +
                " | City: " + cityName +
-               " | Station: " + stationName +
+               " | Station: " + stateName +
                " | Condition: " + conditionName +
                " | Temp: " + temperature +
                " | Humidity: " + humidity +

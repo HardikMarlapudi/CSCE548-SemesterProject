@@ -4,205 +4,297 @@ import java.net.*;
 
 public class WeatherService {
 
-    private WeatherRecordDAO dao = new WeatherRecordDAO();
+private String city;
+private String state;
+private double temperature;
+private double humidity;
 
-    public void startService() throws Exception {
+private WeatherRecordDAO dao = new WeatherRecordDAO();
 
-        HttpServer server =
-                HttpServer.create(new InetSocketAddress(8081), 0);
+public void startService() throws Exception {
 
-        server.createContext("/weather", this::handleRequest);
+    HttpServer server =
+            HttpServer.create(new InetSocketAddress(8081), 0);
 
-        server.start();
+    server.createContext("/weather", this::handleRequest);
 
-        System.out.println(
-            "Weather Service running at http://localhost:8081/weather");
-    }
+    server.start();
 
-    private void handleRequest(HttpExchange exchange) throws IOException {
+    System.out.println(
+        "Weather Service running at http://localhost:8081/weather");
+}
 
-        addCORS(exchange);
+private void handleRequest(HttpExchange exchange) throws IOException {
 
-        String method = exchange.getRequestMethod();
-        String path = exchange.getRequestURI().getPath();
-        String query = exchange.getRequestURI().getQuery();
+    addCORS(exchange);
 
-        String response = "";
-        int statusCode = 200;
+    String method = exchange.getRequestMethod();
+    String path = exchange.getRequestURI().getPath();
+    String query = exchange.getRequestURI().getQuery();
 
-        try {
+    String response = "";
+    int statusCode = 200;
 
-            // =====================
-            // HANDLE PREFLIGHT
-            // =====================
-            if (method.equals("OPTIONS")) {
-                exchange.sendResponseHeaders(204, -1);
-                return;
+    try {
+
+        // HANDLE PREFLIGHT
+        if (method.equals("OPTIONS")) {
+            exchange.sendResponseHeaders(204, -1);
+            return;
+        }
+
+        // =====================
+        // GET
+        // =====================
+        if (method.equals("GET")) {
+
+            if (query != null && query.startsWith("city=")) {
+
+                String city =
+                    URLDecoder.decode(query.substring(5), "UTF-8");
+
+                response =
+                    JsonUtil.toJson(dao.getRecordsByCity(city));
+
             }
-
-            // =====================
-            // GET
-            // =====================
-            if (method.equals("GET")) {
-
-                if (query != null && query.startsWith("city=")) {
-
-                    String city =
-                        URLDecoder.decode(query.substring(5), "UTF-8");
-
-                    response =
-                        dao.getRecordsByCity(city).toString();
-
-                }
-                else if (path.matches("/weather/\\d+")) {
-
-                    int id =
-                        Integer.parseInt(path.replace("/weather/", ""));
-
-                    WeatherRecord record =
-                        dao.getRecordById(id);
-
-                    if (record == null) {
-                        statusCode = 404;
-                        response = "Record not found";
-                    } else {
-                        response = record.toString();
-                    }
-                }
-                else {
-                    response = dao.getAllRecords().toString();
-                }
-            }
-
-            // =====================
-            // POST
-            // =====================
-            else if (method.equals("POST")) {
-
-                String body = readBody(exchange);
-
-                WeatherRecord r =
-                        JsonUtil.fromJson(body);
-
-                dao.addRecord(r);
-
-                statusCode = 201;
-                response = "Record Created";
-            }
-
-            // =====================
-            // PUT
-            // =====================
-            else if (method.equals("PUT")
-                    && path.matches("/weather/\\d+")) {
+            else if (path.matches("/weather/\\d+")) {
 
                 int id =
                     Integer.parseInt(path.replace("/weather/", ""));
 
-                String body = readBody(exchange);
+                WeatherRecord record =
+                    dao.getRecordById(id);
 
-                WeatherRecord r =
-                        JsonUtil.fromJson(body);
-
-                dao.updateRecord(id, r);
-
-                response = "Record Updated";
+                if (record == null) {
+                    statusCode = 404;
+                    response = "Record not found";
+                } else {
+                    response = JsonUtil.toJson(java.util.List.of(record));
+                }
             }
-
-            // =====================
-            // DELETE
-            // =====================
-            else if (method.equals("DELETE")
-                    && path.matches("/weather/\\d+")) {
-
-                int id =
-                    Integer.parseInt(path.replace("/weather/", ""));
-
-                dao.deleteRecord(id);
-
-                response = "Record Deleted";
-            }
-
             else {
-                statusCode = 400;
-                response = "Invalid Request";
+                response = JsonUtil.toJson(dao.getAllRecords());
             }
-
-        }
-        catch (Exception e) {
-
-            e.printStackTrace();
-
-            statusCode = 500;
-            response = "Server Error";
         }
 
-        exchange.getResponseHeaders()
-                .add("Content-Type", "application/json");
+        // =====================
+        // POST
+        // =====================
+        else if (method.equals("POST")) {
 
-        byte[] bytes = response.getBytes();
+            String body = readBody(exchange);
 
-        exchange.sendResponseHeaders(statusCode, bytes.length);
+            WeatherRecord r =
+                    JsonUtil.fromJson(body);
 
-        OutputStream os = exchange.getResponseBody();
-        os.write(bytes);
-        os.close();
-    }
+            dao.addRecord(r);
 
-    private void addCORS(HttpExchange exchange) {
-
-        Headers h = exchange.getResponseHeaders();
-
-        h.add("Access-Control-Allow-Origin", "*");
-        h.add("Access-Control-Allow-Methods",
-                "GET,POST,PUT,DELETE,OPTIONS");
-        h.add("Access-Control-Allow-Headers", "Content-Type");
-    }
-
-    private String readBody(HttpExchange exchange) throws IOException {
-
-        BufferedReader br =
-            new BufferedReader(
-                new InputStreamReader(exchange.getRequestBody()));
-
-        StringBuilder body = new StringBuilder();
-        String line;
-
-        while ((line = br.readLine()) != null)
-            body.append(line);
-
-        return body.toString();
-    }
-
-    private static class JsonUtil {
-
-        public static WeatherRecord fromJson(String json) {
-            String cityName = extractValue(json, "cityName");
-            String stationName = extractValue(json, "stationName");
-            String conditionName = extractValue(json, "conditionName");
-            double temperature = Double.parseDouble(extractValue(json, "temperature"));
-            int humidity = Integer.parseInt(extractValue(json, "humidity"));
-            String dateStr = extractValue(json, "recordDate");
-            java.sql.Date recordDate = java.sql.Date.valueOf(dateStr);
-            
-            return new WeatherRecord(cityName, stationName, conditionName, temperature, humidity, recordDate);
+            statusCode = 201;
+            response = JsonUtil.toJson(dao.getAllRecords());
         }
 
-        private static String extractValue(String json, String key) {
-            String pattern = "\"" + key + "\":\"";
-            int start = json.indexOf(pattern);
-            if (start == -1) {
-                pattern = "\"" + key + "\":";
-                start = json.indexOf(pattern);
-                if (start == -1) return "";
-                start += pattern.length();
-                int end = json.indexOf(",", start);
-                if (end == -1) end = json.indexOf("}", start);
-                return json.substring(start, end).trim();
-            }
+        // =====================
+        // PUT
+        // =====================
+        else if (method.equals("PUT")
+                && path.matches("/weather/\\d+")) {
+
+            int id =
+                Integer.parseInt(path.replace("/weather/", ""));
+
+            String body = readBody(exchange);
+
+            WeatherRecord r =
+                    JsonUtil.fromJson(body);
+
+            dao.updateRecord(id, r);
+
+            response = JsonUtil.toJson(dao.getAllRecords());
+        }
+
+        // =====================
+        // DELETE
+        // =====================
+        else if (method.equals("DELETE")
+            && path.matches("/weather/\\d+")) {
+
+            int id =
+                Integer.parseInt(path.replace("/weather/", ""));
+
+            dao.deleteRecord(id);
+
+            // reorder IDs after delete
+            dao.reorderIds();
+
+            response = JsonUtil.toJson(dao.getAllRecords());
+        }
+
+        else {
+            statusCode = 400;
+            response = "Invalid Request";
+        }
+
+    }
+    catch (Exception e) {
+
+        e.printStackTrace();
+
+        statusCode = 500;
+        response = "{\"error\":\"Server Error\"}";
+    }
+
+    exchange.getResponseHeaders()
+            .add("Content-Type", "application/json");
+
+    byte[] bytes = response.getBytes();
+
+    exchange.sendResponseHeaders(statusCode, bytes.length);
+
+    OutputStream os = exchange.getResponseBody();
+    os.write(bytes);
+    os.close();
+}
+
+private void addCORS(HttpExchange exchange) {
+
+    Headers h = exchange.getResponseHeaders();
+
+    h.add("Access-Control-Allow-Origin", "*");
+    h.add("Access-Control-Allow-Methods",
+            "GET,POST,PUT,DELETE,OPTIONS");
+    h.add("Access-Control-Allow-Headers", "Content-Type");
+}
+
+private String readBody(HttpExchange exchange) throws IOException {
+
+    BufferedReader br =
+        new BufferedReader(
+            new InputStreamReader(exchange.getRequestBody()));
+
+    StringBuilder body = new StringBuilder();
+    String line;
+
+    while ((line = br.readLine()) != null)
+        body.append(line);
+
+    return body.toString();
+}
+
+private static class JsonUtil {
+
+    public static WeatherRecord fromJson(String json) {
+
+        String cityName = extractValue(json, "cityName");
+        String stateName = extractValue(json, "stateName");
+        String conditionName = extractValue(json, "conditionName");
+
+        String tempStr = extractValue(json, "temperature");
+        double temperature = 0.0;
+
+        if (tempStr != null && !tempStr.equals("") && !tempStr.equals("null")) {
+            temperature = Double.parseDouble(tempStr);
+        }
+
+        String humidityStr = extractValue(json, "humidity");
+        int humidity = 0;
+
+        if (humidityStr != null && !humidityStr.equals("") && !humidityStr.equals("null")) {
+            humidity = Integer.parseInt(humidityStr);
+        }
+
+        String dateStr = extractValue(json, "recordDate");
+        java.sql.Date recordDate = null;
+
+        if (dateStr != null && !dateStr.equals("") && !dateStr.equals("null")) {
+            recordDate = java.sql.Date.valueOf(dateStr);
+        }
+
+        return new WeatherRecord(
+            cityName,
+            stateName,
+            conditionName,
+            temperature,
+            humidity,
+            recordDate
+        );
+    }
+
+    private static String extractValue(String json, String key) {
+
+        String pattern = "\"" + key + "\":\"";
+        int start = json.indexOf(pattern);
+
+        if (start == -1) {
+            pattern = "\"" + key + "\":";
+            start = json.indexOf(pattern);
+
+            if (start == -1) return "";
+
             start += pattern.length();
-            int end = json.indexOf("\"", start);
-            return json.substring(start, end);
+            int end = json.indexOf(",", start);
+
+            if (end == -1) end = json.indexOf("}", start);
+
+            return json.substring(start, end).trim();
         }
+
+        start += pattern.length();
+        int end = json.indexOf("\"", start);
+
+        return json.substring(start, end);
     }
+
+    public static String toJson(java.util.List<WeatherRecord> list) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("[\n");
+
+        for (int i = 0; i < list.size(); i++) {
+
+            WeatherRecord r = list.get(i);
+
+            sb.append("  {\n")
+              .append("    \"recordId\": ").append(r.getRecordId()).append(",\n")
+              .append("    \"cityName\": \"").append(r.getCityName()).append("\",\n")
+              .append("    \"stateName\": \"").append(r.getStateName()).append("\",\n")
+              .append("    \"conditionName\": \"").append(r.getConditionName()).append("\",\n")
+              .append("    \"temperature\": ").append(r.getTemperature()).append(",\n")
+              .append("    \"humidity\": ").append(r.getHumidity()).append(",\n")
+              .append("    \"recordDate\": \"").append(r.getRecordDate()).append("\"\n")
+              .append("  }");
+
+            if (i < list.size() - 1)
+                sb.append(",");
+
+            sb.append("\n");
+        }
+
+        sb.append("]");
+        return sb.toString();
+    }
+}
+
+public void setCity(String city) {
+    this.city = city;
+}
+
+public void setState(String state) {
+    this.state = state;
+}
+
+public void setTemperature(double temperature) {
+    this.temperature = temperature;
+}
+
+public void setHumidity(double humidity) {
+    this.humidity = humidity;
+}
+
+public WeatherRecordDAO getDao() {
+    return dao;
+}
+
+public void setDao(WeatherRecordDAO dao) {
+    this.dao = dao;
+}
 }

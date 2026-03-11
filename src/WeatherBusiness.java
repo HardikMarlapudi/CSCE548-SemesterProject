@@ -31,6 +31,20 @@ public class WeatherBusiness {
     }
 
     // =====================
+    // EDIT
+    // =====================
+
+    public void updateWeatherRecord(int editId, WeatherRecord updatedRecord) {
+        validateRecord(updatedRecord);
+
+        try {
+            weatherDAO.updateRecord(editId, updatedRecord);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to update record");
+        }
+    }
+
+    // =====================
     // DELETE
     // =====================
     public void deleteWeatherRecord(int id) {
@@ -57,8 +71,8 @@ public class WeatherBusiness {
             record.getCityName().trim().isEmpty())
             throw new IllegalArgumentException("City required");
 
-        if (record.getStationName() == null ||
-            record.getStationName().trim().isEmpty())
+        if (record.getStateName() == null ||
+            record.getStateName().trim().isEmpty())
             throw new IllegalArgumentException("Station required");
 
         if (record.getConditionName() == null ||
