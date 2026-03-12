@@ -1,6 +1,6 @@
-/* ------------------------------
-FORM INPUT REFERENCES
------------------------------- */
+/* ================================= */
+/* INPUT FIELD REFERENCES */
+/* ================================= */
 
 const recordId = document.getElementById("recordId");
 const city = document.getElementById("city");
@@ -10,33 +10,45 @@ const temperature = document.getElementById("temperature");
 const humidity = document.getElementById("humidity");
 const date = document.getElementById("date");
 
-/* ------------------------------
-DISPLAY WEATHER TABLE
------------------------------- */
+/* ================================= */
+/* DISPLAY WEATHER CARDS */
+/* ================================= */
 
 function displayWeather(data) {
 
-    const tableBody = document.getElementById("weatherTableBody");
+    const container = document.getElementById("weatherCards");
 
-    tableBody.innerHTML = "";
+    container.innerHTML = "";
 
     data.forEach(record => {
 
-        const row = document.createElement("tr");
+        /* Select icon based on condition */
 
-        row.innerHTML = `
-        <td>${record.recordId}</td>
-        <td>${record.cityName}</td>
-        <td>${record.stateName}</td>
-        <td>${record.conditionName}</td>
-        <td>${record.temperature}°F</td>
-        <td>${record.humidity}%</td>
-        <td>${record.recordDate}</td>
+        let icon = "☀️";
+
+        if (record.conditionName.toLowerCase().includes("rain")) icon = "🌧️";
+        if (record.conditionName.toLowerCase().includes("cloud")) icon = "☁️";
+        if (record.conditionName.toLowerCase().includes("snow")) icon = "❄️";
+        if (record.conditionName.toLowerCase().includes("storm")) icon = "⛈️";
+
+        /* Create card */
+
+        const card = document.createElement("div");
+
+        card.className = "weather-card";
+
+        card.innerHTML = `
+            <div class="weather-icon">${icon}</div>
+            <h3>${record.cityName}, ${record.stateName}</h3>
+            <p><b>Condition:</b> ${record.conditionName}</p>
+            <p><b>Temperature:</b> ${record.temperature}°F</p>
+            <p><b>Humidity:</b> ${record.humidity}%</p>
+            <p><b>Date:</b> ${record.recordDate}</p>
         `;
 
-        /* Click row to load record into form */
+        /* Clicking card fills the edit form */
 
-        row.onclick = () => {
+        card.onclick = () => {
 
             recordId.value = record.recordId;
             city.value = record.cityName;
@@ -48,37 +60,32 @@ function displayWeather(data) {
 
         };
 
-        tableBody.appendChild(row);
+        container.appendChild(card);
 
     });
 
 }
 
-/* ------------------------------
-LOAD WEATHER DATA
------------------------------- */
+/* ================================= */
+/* LOAD WEATHER DATA */
+/* ================================= */
 
 async function loadWeatherUI() {
 
     try {
-
         const response = await fetch("http://localhost:8081/weather");
-
         const data = await response.json();
-
         displayWeather(data);
 
-    } catch(error) {
-
-        console.error("Error loading weather data:", error);
-
+    } catch (error) {
+        console.error("Error loading weather:", error);
     }
 
 }
 
-/* ------------------------------
-LOAD WEATHER JSON (DEVTOOLS)
------------------------------- */
+/* ================================= */
+/* LOAD WEATHER JSON (DEBUG TOOL) */
+/* ================================= */
 
 async function loadWeatherJSON() {
 
@@ -87,16 +94,17 @@ async function loadWeatherJSON() {
         const response = await fetch("http://localhost:8081/weather");
         const data = await response.json();
         console.log("Weather JSON:", data);
+        alert("Weather JSON loaded! Check console.");
 
-    } catch(error) {
-        console.error("Error loading JSON:", error);
+    } catch (error) {
+        console.error("JSON error:", error);
     }
 
 }
 
-/* ------------------------------
-ADD WEATHER RECORD
------------------------------- */
+/* ================================= */
+/* ADD RECORD */
+/* ================================= */
 
 async function addRecord() {
 
@@ -121,25 +129,33 @@ async function addRecord() {
 
         });
 
-        if(!response.ok) throw new Error("Failed to add record");
+        if (!response.ok) throw new Error("Add failed");
+
         alert("Record Added");
+
         loadWeatherUI();
 
-    } catch(error) {
+    } catch (error) {
+
         console.error("Add error:", error);
+
     }
 
 }
 
-/* ------------------------------
-UPDATE WEATHER RECORD
------------------------------- */
+/* ================================= */
+/* UPDATE RECORD */
+/* ================================= */
 
 async function updateRecord() {
 
-    if(!recordId.value) {
-        alert("Please select a record first");
+    /* Make sure a record is selected */
+
+    if (!recordId.value) {
+
+        alert("Please click a weather card first to select a record.");
         return;
+
     }
 
     try {
@@ -158,51 +174,45 @@ async function updateRecord() {
         const response = await fetch(`http://localhost:8081/weather/${recordId.value}`, {
 
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json"
+            },
             body: JSON.stringify(data)
 
         });
 
-        if(!response.ok) throw new Error("Update failed");
-        alert("Record Updated");
+        if (!response.ok) {
+            throw new Error("Update failed");
+        }
+
+        alert("Record Updated Successfully");
+
         loadWeatherUI();
 
-    } catch(error) {
+    } catch (error) {
+
         console.error("Update error:", error);
+        alert("Error updating record");
+
     }
 
 }
 
-/* ------------------------------
-DELETE WEATHER RECORD
------------------------------- */
+/* ================================= */
+/* DELETE RECORD */
+/* ================================= */
 
 async function deleteRecord() {
 
-    if(!recordId.value) {
-        alert("Please select a record first");
-        return;
-    }
-
-    try {
-        const response = await fetch(`http://localhost:8081/weather/${recordId.value}`, {
-            method: "DELETE"
-        });
-
-        if(!response.ok) throw new Error("Delete failed");
-
-        alert("Record Deleted");
-
-        loadWeatherUI();
-
-    } catch(error) {
-        console.error("Delete error:", error);
-    }
-
+    await fetch(`http://localhost:8081/weather/${recordId.value}`, {
+        method: "DELETE"
+    });
+    alert("Record Deleted");
+    loadWeatherUI();
 }
 
-/* ------------------------------
-LOAD DATA ON PAGE START
------------------------------- */
+/* ================================= */
+/* AUTO LOAD WEATHER ON PAGE START */
+/* ================================= */
 
 window.onload = loadWeatherUI;
