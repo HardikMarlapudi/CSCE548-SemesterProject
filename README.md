@@ -44,7 +44,7 @@ MySQL Database
 
 Handles all weather record operations.
 
-Features:
+### Features
 
 * View weather records
 * Add new weather records
@@ -52,7 +52,7 @@ Features:
 * Delete weather records
 * Returns weather data in JSON format
 
-API Endpoints:
+### API Endpoints
 
 GET /weather
 POST /weather
@@ -65,12 +65,12 @@ DELETE /weather/{id}
 
 Handles weather alerts.
 
-Features:
+### Features
 
 * Retrieve alert list
 * Add new alerts
 
-API Endpoints:
+### API Endpoints
 
 GET /alerts
 POST /alerts
@@ -81,11 +81,11 @@ POST /alerts
 
 Handles location information.
 
-Features:
+### Features
 
 * Retrieve weather station locations
 
-API Endpoints:
+### API Endpoints
 
 GET /locations
 
@@ -99,10 +99,9 @@ The project includes a **simple weather dashboard UI** built with:
 * CSS
 * JavaScript
 
-Features:
+### Features
 
 * View weather records
-* Weather cards with icons
 * Add new weather record
 * Edit existing weather record
 * Delete weather record
@@ -112,18 +111,17 @@ Features:
 Weather cards display:
 
 * City
-* Station
+* State
 * Condition
 * Temperature
 * Humidity
 * Date
-* Weather icon
 
 ---
 
 # Technologies Used
 
-Backend
+## Backend
 
 * Java
 * Java HTTP Server
@@ -131,19 +129,20 @@ Backend
 * MySQL
 * JSON
 
-Frontend
+## Frontend
 
 * HTML
 * CSS
 * JavaScript
 * Fetch API
 
-Tools
+## Tools
 
 * VS Code
 * Git
 * GitHub
 * GitHub Pages
+* Node.js
 
 ---
 
@@ -170,6 +169,7 @@ CSCE548-SemesterProject
 ├── screenshots
 │   └── UI screenshots
 │
+├── package.json
 └── README.md
 ```
 
@@ -177,56 +177,97 @@ CSCE548-SemesterProject
 
 # Database Setup
 
-1. Install MySQL
-2. Create database:
+### Step 1 – Install MySQL
 
-```sql
+Make sure MySQL server is installed and running.
+
+### Step 2 – Create Database
+
+```
 CREATE DATABASE weatherdb;
 ```
 
-3. Import SQL schema from the `sql` folder.
-
-4. Update database credentials in:
+### Step 3 – Import Database Schema
 
 ```
-DBConnection.java
+mysql -u root -p weatherdb < sql/weatherdb.sql
+```
+
+### Step 4 – Configure Database Connection
+
+Update credentials inside:
+
+```
+src/DBConnection.java
+```
+
+Example configuration:
+
+```
+String url = "jdbc:mysql://localhost:3306/weatherdb";
+String username = "root";
+String password = "your_password";
 ```
 
 ---
 
-# How to Run the Application
+# How to Compile and Run the Application
 
-## Step 1 – Start MySQL
+## Step 1 – Clone the Repository
 
-Make sure MySQL is running and the database is created.
+```
+git clone https://github.com/HardikMarlapudi/CSCE548-SemesterProject.git
+cd CSCE548-SemesterProject
+```
 
 ---
 
-## Step 2 – Start Services
+## Step 2 – Compile the Java Services
 
-Run the following Java services:
-
-Weather Service
+Navigate to the source folder:
 
 ```
-WeatherService.java
+cd src
 ```
 
-Alert Service
+Compile all Java files.
+
+### Mac / Linux
 
 ```
-AlertService.java
+javac -cp ".:../lib/*" *.java
 ```
 
-Location Service
+### Windows
 
 ```
-LocationService.java
+javac -cp ".;../lib/*" *.java
 ```
 
-You should see:
+---
+
+## Step 3 – Start the Microservices
+
+Run the service launcher:
+
+### Mac / Linux
 
 ```
+java -cp ".:../lib/*" ServiceLauncher
+```
+
+### Windows
+
+```
+java -cp ".;../lib/*" ServiceLauncher
+```
+
+Expected output:
+
+```
+Starting Weather Microservices...
+All services initialized.
+
 Weather Service running at http://localhost:8081/weather
 Alert Service running at http://localhost:8082/alerts
 Location Service running at http://localhost:8083/locations
@@ -234,15 +275,55 @@ Location Service running at http://localhost:8083/locations
 
 ---
 
-## Step 3 – Open the UI
+## Step 4 – Start the Frontend UI
+
+Navigate to the web folder:
+
+```
+cd ../web
+```
 
 Open:
+
+```
+index.html
+```
+
+in your browser.
+
+Alternatively, run with Live Server:
+
+```
+npx live-server
+```
+
+---
+
+# Accessing the System
+
+### Frontend UI
 
 ```
 web/index.html
 ```
 
-or run using a live server.
+### Weather API
+
+```
+http://localhost:8081/weather
+```
+
+### Alert API
+
+```
+http://localhost:8082/alerts
+```
+
+### Location API
+
+```
+http://localhost:8083/locations
+```
 
 ---
 
@@ -250,7 +331,14 @@ or run using a live server.
 
 The frontend UI is deployed using **GitHub Pages**.
 
-Deployment path:
+Deploy using:
+
+```
+npm install
+npm run deploy
+```
+
+Deployment directory:
 
 ```
 /web
@@ -263,7 +351,26 @@ https://HardikMarlapudi.github.io/CSCE548-SemesterProject/
 ```
 
 Note:
-Backend services must still run locally for API requests to work.
+Backend services must run locally for API requests to work.
+
+---
+
+# Example Startup Flow
+
+Typical workflow:
+
+```
+git clone https://github.com/HardikMarlapudi/CSCE548-SemesterProject.git
+cd CSCE548-SemesterProject/src
+javac -cp ".:../lib/*" *.java
+java -cp ".:../lib/*" ServiceLauncher
+```
+
+Then open:
+
+```
+web/index.html
+```
 
 ---
 
@@ -271,12 +378,13 @@ Backend services must still run locally for API requests to work.
 
 (Add screenshots of your UI here)
 
-Example:
+Examples:
 
 * Weather dashboard
-* Weather cards
-* Add/Edit/Delete record
-* Alerts display
+* Add weather record
+* Update record
+* Delete record
+* Weather table
 
 ---
 
@@ -298,5 +406,3 @@ Possible improvements for the system include:
 This project demonstrates how **microservices can be implemented in Java to build scalable backend systems**, while also integrating a **web-based UI for user interaction**.
 
 It highlights separation of concerns through service-based architecture and shows how independent services can work together to form a complete system.
-
----
