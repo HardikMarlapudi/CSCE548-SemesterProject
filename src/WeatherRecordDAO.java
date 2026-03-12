@@ -12,7 +12,7 @@ public class WeatherRecordDAO {
         List<WeatherRecord> list = new ArrayList<>();
 
         String sql =
-            "SELECT record_id, city_name, station_name, condition_name, " +
+            "SELECT record_id, city_name, state_name, condition_name, " +
             "temperature, humidity, record_date " +
             "FROM weather_records ORDER BY record_id ASC";
 
@@ -24,7 +24,7 @@ public class WeatherRecordDAO {
 
                 WeatherRecord record = new WeatherRecord(
                         rs.getString("city_name"),
-                        rs.getString("station_name"),
+                        rs.getString("state_name"),
                         rs.getString("condition_name"),
                         rs.getDouble("temperature"),
                         rs.getInt("humidity"),
@@ -46,7 +46,7 @@ public class WeatherRecordDAO {
     public WeatherRecord getRecordById(int id) throws Exception {
 
         String sql =
-            "SELECT record_id, city_name, station_name, condition_name, " +
+            "SELECT record_id, city_name, state_name, condition_name, " +
             "temperature, humidity, record_date " +
             "FROM weather_records WHERE record_id = ?";
 
@@ -61,7 +61,7 @@ public class WeatherRecordDAO {
 
                     WeatherRecord record = new WeatherRecord(
                             rs.getString("city_name"),
-                            rs.getString("station_name"),
+                            rs.getString("state_name"),
                             rs.getString("condition_name"),
                             rs.getDouble("temperature"),
                             rs.getInt("humidity"),
@@ -84,14 +84,14 @@ public class WeatherRecordDAO {
 
         String sql =
             "INSERT INTO weather_records " +
-            "(city_name, station_name, condition_name, temperature, humidity, record_date) " +
+            "(city_name, state_name, condition_name, temperature, humidity, record_date) " +
             "VALUES (?, ?, ?, ?, ?, ?)";
     
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
     
             ps.setString(1, r.getCityName());
-            ps.setString(2, r.getStationName());
+            ps.setString(2, r.getStateName());
             ps.setString(3, r.getConditionName());
             ps.setDouble(4, r.getTemperature());
             ps.setInt(5, r.getHumidity());
@@ -108,21 +108,21 @@ public class WeatherRecordDAO {
 
         String sql =
             "UPDATE weather_records SET " +
-            "city_name=?, station_name=?, condition_name=?, " +
+            "city_name=?, state_name=?, condition_name=?, " +
             "temperature=?, humidity=?, record_date=? " +
             "WHERE record_id=?";
-
+    
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-
+    
             ps.setString(1, r.getCityName());
-            ps.setString(2, r.getStationName());
+            ps.setString(2, r.getStateName());
             ps.setString(3, r.getConditionName());
             ps.setDouble(4, r.getTemperature());
             ps.setInt(5, r.getHumidity());
             ps.setDate(6, r.getRecordDate());
             ps.setInt(7, id);
-
+    
             ps.executeUpdate();
         }
     }
@@ -173,7 +173,7 @@ public class WeatherRecordDAO {
         List<WeatherRecord> list = new ArrayList<>();
 
         String sql =
-            "SELECT record_id, city_name, station_name, condition_name, " +
+            "SELECT record_id, city_name, state_name, condition_name, " +
             "temperature, humidity, record_date " +
             "FROM weather_records WHERE city_name=? ORDER BY record_id ASC";
 
@@ -188,7 +188,7 @@ public class WeatherRecordDAO {
 
                     WeatherRecord record = new WeatherRecord(
                             rs.getString("city_name"),
-                            rs.getString("station_name"),
+                            rs.getString("state_name"),
                             rs.getString("condition_name"),
                             rs.getDouble("temperature"),
                             rs.getInt("humidity"),

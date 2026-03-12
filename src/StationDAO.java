@@ -12,7 +12,7 @@ public class StationDAO {
         List<Station> stations = new ArrayList<>();
 
         String sql =
-                "SELECT station_id, station_name, location_name FROM stations";
+                "SELECT station_id, state_name, location_name FROM stations";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -21,8 +21,8 @@ public class StationDAO {
             while (rs.next()) {
 
                 Station station = new Station(
-                        rs.getInt("station_id"),
-                        rs.getString("station_name"),
+                        rs.getInt("state_id"),
+                        rs.getString("state_name"),
                         rs.getString("location_name")
                 );
 

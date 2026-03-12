@@ -18,7 +18,7 @@ INSERT INTO weather_conditions VALUES
 -- =========================
 -- STATIONS
 -- =========================
-INSERT INTO stations (station_name, location_name) VALUES
+INSERT INTO stations (state_name, location_name) VALUES
 ('Downtown Station', 'Columbia'),
 ('Campus Station', 'Columbia'),
 ('Central Park Station', 'New York'),
@@ -28,7 +28,7 @@ INSERT INTO stations (station_name, location_name) VALUES
 -- WEATHER RECORDS (50 ROWS)
 -- =========================
 INSERT INTO weather_records
-(city_name, station_name, condition_name, temperature, humidity, record_date)
+(city_name, state_name, condition_name, temperature, humidity, record_date)
 VALUES
 -- Columbia (25)
 ('Columbia','Downtown Station','Sunny',72.5,55,'2025-01-01'),

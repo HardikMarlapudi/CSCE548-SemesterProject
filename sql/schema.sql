@@ -22,7 +22,7 @@ CREATE TABLE weather_conditions (
 -- =========================
 CREATE TABLE stations (
     station_id INT AUTO_INCREMENT PRIMARY KEY,
-    station_name VARCHAR(100),
+    state_name VARCHAR(100),
     location_name VARCHAR(100)
 );
 
@@ -32,7 +32,7 @@ CREATE TABLE stations (
 CREATE TABLE weather_records (
     record_id INT AUTO_INCREMENT PRIMARY KEY,
     city_name VARCHAR(100),
-    station_name VARCHAR(100),
+    state_name VARCHAR(100),
     condition_name VARCHAR(50),
     temperature DECIMAL(5,2),
     humidity INT,

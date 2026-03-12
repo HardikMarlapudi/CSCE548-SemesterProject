@@ -1,5 +1,5 @@
 INSERT INTO weather_records
-(city_name, station_name, condition_name, temperature, humidity, record_date)
+(city_name, state_name, condition_name, temperature, humidity, record_date)
 SELECT
     CASE WHEN seq % 2 = 0 THEN 'Columbia' ELSE 'New York' END,
     CASE WHEN seq % 2 = 0 THEN 'Campus Station' ELSE 'Times Square Station' END,
