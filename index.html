@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Weather Application</title>
+
+    <!-- Link to stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+
+</head>
+
+<body>
+
+    <!-- ================================= -->
+    <!-- HEADER SECTION -->
+    <!-- ================================= -->
+
+    <header>
+
+        <h1>Weather Application</h1>
+        <h4>CSCE 548 – Building Secure Software</h4>
+
+        <!-- Buttons to load data -->
+        <div class="top-buttons">
+
+            <button onclick="loadWeatherUI()">Load Weather</button>
+
+            <button onclick="loadWeatherJSON()">
+                Load Weather JSON
+            </button>
+
+        </div>
+
+    </header>
+
+    <!-- ================================= -->
+    <!-- WEATHER DASHBOARD -->
+    <!-- ================================= -->
+
+    <h2>Weather Dashboard</h2>
+
+    <!-- Weather cards will appear here -->
+    <div id="weatherCards" class="weather-cards"></div>
+
+    <!-- ================================= -->
+    <!-- MANAGE WEATHER RECORDS -->
+    <!-- ================================= -->
+
+    <section class="controls">
+
+    <h3>Manage Weather Records</h3>
+
+    <div class="form-grid">
+        <!-- Input fields -->
+
+        <input id="recordId" placeholder="Record ID">
+        <input id="city" placeholder="City">
+
+        <input id="state" placeholder="State">
+        <input id="condition" placeholder="Condition">
+
+        <input id="temperature" placeholder="Temperature">
+        <input id="humidity" placeholder="Humidity">
+        
+        <input id="date" type="date">
+
+    </div>   
+
+        <!-- CRUD Buttons -->
+
+        <div class="buttons">
+            <button onclick="addRecord()">Add Record</button>
+            <button onclick="updateRecord()">Update Record</button>
+            <button onclick="deleteRecord()">Delete Record</button>
+        </div>
+
+    </section>
+
+    <!-- ================================= -->
+    <!-- FOOTER -->
+    <!-- ================================= -->
+
+    <footer>
+        <p>&copy; 2026 Hardik Marlapudi. All Rights Reserved.</p>
+    </footer>
+
+
+    <!-- JavaScript file -->
+    <script src="script.js"></script>
+
+</body>
+
+</html>
