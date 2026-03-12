@@ -207,8 +207,12 @@ async function deleteRecord() {
     await fetch(`http://localhost:8081/weather/${recordId.value}`, {
         method: "DELETE"
     });
-    alert("Record Deleted");
-    loadWeatherUI();
+    if (document.getElementById("recordId").value == "" || document.getElementById("city").value == "" || document.getElementById("state").value == "" || document.getElementById("condition").value == "" || document.getElementById("temperature").value == "" || document.getElementById("humidity").value == "" || document.getElementById("date").value == "") {
+        alert("Please enter weather card details to remove a weather card");
+    } else {
+        alert("Record deleted");
+        loadWeatherUI();
+    }
 }
 
 /* ================================= */
