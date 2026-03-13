@@ -1,5 +1,10 @@
 import java.sql.Date;
 
+/*
+ * WeatherRecord
+ * Model class representing a weather record in the system
+ */
+
 public class WeatherRecord {
 
     private int recordId;
@@ -10,14 +15,16 @@ public class WeatherRecord {
     private int humidity;
     private Date recordDate;
 
-    // =====================
-    // Default Constructor
-    // =====================
+    /* =====================================
+       DEFAULT CONSTRUCTOR
+       ===================================== */
+
     public WeatherRecord() {}
 
-    // =====================
-    // Parameterized Constructor
-    // =====================
+    /* =====================================
+       PARAMETERIZED CONSTRUCTOR
+       ===================================== */
+
     public WeatherRecord(String cityName,
                          String stateName,
                          String conditionName,
@@ -33,9 +40,10 @@ public class WeatherRecord {
         setRecordDate(recordDate);
     }
 
-    // =====================
-    // Getters
-    // =====================
+    /* =====================================
+       GETTERS
+       ===================================== */
+
     public int getRecordId() {
         return recordId;
     }
@@ -64,69 +72,92 @@ public class WeatherRecord {
         return recordDate;
     }
 
-    // =====================
-    // Setters with Validation
-    // =====================
+    /* =====================================
+       SETTERS WITH VALIDATION
+       ===================================== */
+
     public void setRecordId(int recordId) {
-        if (recordId < 0)
-            throw new IllegalArgumentException("Invalid record ID");
+
+        if (recordId < 0) {
+            throw new IllegalArgumentException("Record ID cannot be negative");
+        }
 
         this.recordId = recordId;
     }
 
     public void setCityName(String cityName) {
-        if (cityName == null || cityName.trim().isEmpty())
-            throw new IllegalArgumentException("City name required");
+
+        if (cityName == null || cityName.trim().isEmpty()) {
+            throw new IllegalArgumentException("City name is required");
+        }
 
         this.cityName = cityName.trim();
     }
 
     public void setStateName(String stateName) {
-        if (stateName == null || stateName.trim().isEmpty())
-            throw new IllegalArgumentException("Station name required");
+
+        if (stateName == null || stateName.trim().isEmpty()) {
+            throw new IllegalArgumentException("State name is required");
+        }
 
         this.stateName = stateName.trim();
     }
 
     public void setConditionName(String conditionName) {
-        if (conditionName == null || conditionName.trim().isEmpty())
-            throw new IllegalArgumentException("Condition required");
+
+        if (conditionName == null || conditionName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Weather condition is required");
+        }
 
         this.conditionName = conditionName.trim();
     }
 
     public void setTemperature(double temperature) {
-        if (temperature < -100 || temperature > 150)
-            throw new IllegalArgumentException("Invalid temperature");
+
+        if (temperature < -100 || temperature > 150) {
+            throw new IllegalArgumentException(
+                "Temperature must be between -100°F and 150°F"
+            );
+        }
 
         this.temperature = temperature;
     }
 
     public void setHumidity(int humidity) {
-        if (humidity < 0 || humidity > 100)
-            throw new IllegalArgumentException("Invalid humidity");
+
+        if (humidity < 0 || humidity > 100) {
+            throw new IllegalArgumentException(
+                "Humidity must be between 0 and 100"
+            );
+        }
 
         this.humidity = humidity;
     }
 
     public void setRecordDate(Date recordDate) {
-        if (recordDate == null)
-            throw new IllegalArgumentException("Date required");
+
+        if (recordDate == null) {
+            throw new IllegalArgumentException("Record date is required");
+        }
 
         this.recordDate = recordDate;
     }
 
-    // =====================
-    // toString()
-    // =====================
+    /* =====================================
+       STRING REPRESENTATION
+       ===================================== */
+
     @Override
     public String toString() {
-        return recordId +
-               " | City: " + cityName +
-               " | Station: " + stateName +
-               " | Condition: " + conditionName +
-               " | Temp: " + temperature +
-               " | Humidity: " + humidity +
-               " | Date: " + recordDate;
+
+        return "WeatherRecord{" +
+                "recordId=" + recordId +
+                ", city='" + cityName + '\'' +
+                ", state='" + stateName + '\'' +
+                ", condition='" + conditionName + '\'' +
+                ", temperature=" + temperature +
+                ", humidity=" + humidity +
+                ", recordDate=" + recordDate +
+                '}';
     }
 }
