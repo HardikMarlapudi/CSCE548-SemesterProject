@@ -128,20 +128,13 @@ function displayWeather(data) {
 async function loadWeatherUI() {
 
     try {
-
         const response = await fetch("http://localhost:8081/weather");
-
         if (!response.ok) throw new Error("Failed to load weather");
-
         const data = await response.json();
-
         displayWeather(data);
-
     } catch (error) {
-
         console.error("Error loading weather:", error);
         alert("Unable to load weather data");
-
     }
 
 }
@@ -153,19 +146,12 @@ async function loadWeatherUI() {
 async function loadWeatherJSON() {
 
     try {
-
         const response = await fetch("http://localhost:8081/weather");
-
         const data = await response.json();
-
         console.log("Weather JSON:", data);
-
         alert("Weather JSON loaded. Check console.");
-
     } catch (error) {
-
         console.error("JSON error:", error);
-
     }
 
 }
@@ -196,16 +182,12 @@ async function addRecord() {
         });
 
         if (!response.ok) throw new Error("Add failed");
-
         alert("Record Added");
-
         loadWeatherUI();
 
     } catch(error) {
-
         console.error(error);
         alert("Server error while adding record.");
-
     }
 }
 
@@ -216,10 +198,8 @@ async function addRecord() {
 async function updateRecord() {
 
     if (!recordId.value) {
-
         alert("Please select a weather card first.");
         return;
-
     }
 
     if (!validateWeatherInput()) return;
@@ -238,17 +218,13 @@ async function updateRecord() {
     try {
 
         const response = await fetch(`http://localhost:8081/weather/${recordId.value}`, {
-
             method: "PUT",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify(data)
-
         });
 
         if (!response.ok) throw new Error("Update failed");
-
         alert("Record Updated");
-
         loadWeatherUI();
 
     } catch (error) {
@@ -267,10 +243,8 @@ async function updateRecord() {
 async function deleteRecord() {
 
     if (!recordId.value) {
-
         alert("Please select a record to delete.");
         return;
-
     }
 
     try {
@@ -280,16 +254,12 @@ async function deleteRecord() {
         });
 
         if (!response.ok) throw new Error("Delete failed");
-
         alert("Record Deleted");
-
         loadWeatherUI();
 
     } catch(error) {
-
         console.error(error);
         alert("Error deleting record");
-
     }
 
 }
