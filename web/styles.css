@@ -92,8 +92,10 @@ h2 {
 }
 
 .weather-icon {
-    font-size: 40px;
+    font-size: 44px;
     margin-bottom: 10px;
+    line-height: 1;
+    text-align: center;
 }
 
 /* ================================= */
