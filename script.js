@@ -64,10 +64,57 @@ function validateWeatherInput() {
 /* ================================= */
 
 function escapeHTML(text) {
+
+    if (!text) return "";
+
     return text
+        .toString()
         .replace(/&/g,"&amp;")
         .replace(/</g,"&lt;")
         .replace(/>/g,"&gt;");
+}
+
+/* ================================= */
+/* CONDITION NORMALIZATION */
+/* ================================= */
+
+function normalizeCondition(conditionName) {
+
+    if (!conditionName) return "unknown";
+
+    const c = conditionName.toLowerCase().trim();
+
+    if (c.includes("sun") || c.includes("clear")) return "sunny";
+    if (c.includes("cloud")) return "cloudy";
+    if (c.includes("rain") || c.includes("drizzle")) return "rainy";
+    if (c.includes("snow") || c.includes("blizzard")) return "snow";
+    if (c.includes("storm") || c.includes("thunder")) return "storm";
+    if (c.includes("fog") || c.includes("mist")) return "fog";
+    if (c.includes("wind")) return "wind";
+
+    return "unknown";
+}
+
+/* ================================= */
+/* RETURN WEATHER ICON */
+/* ================================= */
+
+function getWeatherIcon(conditionName) {
+
+    const condition = normalizeCondition(conditionName);
+
+    const icons = {
+        sunny: "☀️",
+        cloudy: "☁️",
+        rainy: "🌧️",
+        snow: "❄️",
+        storm: "⛈️",
+        fog: "🌫️",
+        wind: "💨",
+        unknown: "🌤️"
+    };
+
+    return icons[condition];
 }
 
 /* ================================= */
@@ -80,14 +127,14 @@ function displayWeather(data) {
 
     container.innerHTML = "";
 
+    if (!data || data.length === 0) {
+        container.innerHTML = "<p>No weather data available.</p>";
+        return;
+    }
+
     data.forEach(record => {
 
-        let icon = "☀️";
-
-        if (record.conditionName.toLowerCase().includes("rain")) icon = "🌧️";
-        if (record.conditionName.toLowerCase().includes("cloud")) icon = "☁️";
-        if (record.conditionName.toLowerCase().includes("snow")) icon = "❄️";
-        if (record.conditionName.toLowerCase().includes("storm")) icon = "⛈️";
+        const icon = getWeatherIcon(record.conditionName);
 
         const card = document.createElement("div");
         card.className = "weather-card";
@@ -101,9 +148,7 @@ function displayWeather(data) {
             <p><b>Date:</b> ${escapeHTML(record.recordDate)}</p>
         `;
 
-        /* Fill form when card clicked */
-
-        card.onclick = () => {
+        card.addEventListener("click", () => {
 
             recordId.value = record.recordId;
             city.value = record.cityName;
@@ -113,7 +158,7 @@ function displayWeather(data) {
             humidity.value = record.humidity;
             date.value = record.recordDate;
 
-        };
+        });
 
         container.appendChild(card);
 
@@ -128,30 +173,45 @@ function displayWeather(data) {
 async function loadWeatherUI() {
 
     try {
+
         const response = await fetch("http://localhost:8081/weather");
-        if (!response.ok) throw new Error("Failed to load weather");
+
+        if (!response.ok) {
+            throw new Error("Failed to load weather");
+        }
+
         const data = await response.json();
+
         displayWeather(data);
+
     } catch (error) {
+
         console.error("Error loading weather:", error);
-        alert("Unable to load weather data");
+        alert("Weather service is unavailable. Please check the server.");
+
     }
 
 }
 
 /* ================================= */
-/* LOAD WEATHER JSON (DEBUG TOOL) */
+/* DEBUG WEATHER JSON */
 /* ================================= */
 
 async function loadWeatherJSON() {
 
     try {
+
         const response = await fetch("http://localhost:8081/weather");
         const data = await response.json();
+
         console.log("Weather JSON:", data);
+
         alert("Weather JSON loaded. Check console.");
+
     } catch (error) {
+
         console.error("JSON error:", error);
+
     }
 
 }
@@ -165,12 +225,14 @@ async function addRecord() {
     if (!validateWeatherInput()) return;
 
     const data = {
+
         cityName: city.value.trim(),
         stateName: state.value.trim(),
-        conditionName: condition.value.trim(),
+        conditionName: condition.value.trim().toLowerCase(),
         temperature: parseFloat(temperature.value),
         humidity: parseInt(humidity.value),
         recordDate: date.value
+
     };
 
     try {
@@ -182,13 +244,18 @@ async function addRecord() {
         });
 
         if (!response.ok) throw new Error("Add failed");
+
         alert("Record Added");
+
         loadWeatherUI();
 
     } catch(error) {
+
         console.error(error);
         alert("Server error while adding record.");
+
     }
+
 }
 
 /* ================================= */
@@ -198,8 +265,10 @@ async function addRecord() {
 async function updateRecord() {
 
     if (!recordId.value) {
+
         alert("Please select a weather card first.");
         return;
+
     }
 
     if (!validateWeatherInput()) return;
@@ -208,7 +277,7 @@ async function updateRecord() {
 
         cityName: city.value.trim(),
         stateName: state.value.trim(),
-        conditionName: condition.value.trim(),
+        conditionName: condition.value.trim().toLowerCase(),
         temperature: parseFloat(temperature.value),
         humidity: parseInt(humidity.value),
         recordDate: date.value
@@ -224,7 +293,9 @@ async function updateRecord() {
         });
 
         if (!response.ok) throw new Error("Update failed");
+
         alert("Record Updated");
+
         loadWeatherUI();
 
     } catch (error) {
@@ -243,8 +314,10 @@ async function updateRecord() {
 async function deleteRecord() {
 
     if (!recordId.value) {
+
         alert("Please select a record to delete.");
         return;
+
     }
 
     try {
@@ -254,12 +327,16 @@ async function deleteRecord() {
         });
 
         if (!response.ok) throw new Error("Delete failed");
+
         alert("Record Deleted");
+
         loadWeatherUI();
 
     } catch(error) {
+
         console.error(error);
         alert("Error deleting record");
+
     }
 
 }
