@@ -29,9 +29,7 @@ public class ServiceLauncher {
             try {
 
                 WeatherService weatherService = new WeatherService();
-                weatherService.startService();
-
-                System.out.println("Weather Service running at http://localhost:8081/weather");
+                weatherService.startService(); // Service handles its own logging
 
             } catch (Exception e) {
 
@@ -57,9 +55,7 @@ public class ServiceLauncher {
             try {
 
                 AlertService alertService = new AlertService();
-                alertService.startService();
-
-                System.out.println("Alert Service running at http://localhost:8082/alerts");
+                alertService.startService(); // Service handles its own logging
 
             } catch (Exception e) {
 
@@ -85,9 +81,7 @@ public class ServiceLauncher {
             try {
 
                 LocationService locationService = new LocationService();
-                locationService.startService();
-
-                System.out.println("Location Service running at http://localhost:8083/locations");
+                locationService.startService(); // Service handles its own logging
 
             } catch (Exception e) {
 
