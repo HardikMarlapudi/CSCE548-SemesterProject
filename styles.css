@@ -16,25 +16,16 @@ header {
     background: #0b3a66;
     color: white;
     text-align: center;
-    padding: 20px;
+    padding: 25px 20px;
 }
 
-h2 {
+h1 {
+    margin-bottom: 5px;
+}
+
+h2, h3 {
     text-align: center;
-}
-
-.top-buttons button {
-    margin: 10px;
-    padding: 10px 16px;
-    border: none;
-    background: #1e6bd6;
-    color: white;
-    cursor: pointer;
-    border-radius: 5px;
-}
-
-.top-buttons button:hover {
-    background: #164fa5;
+    margin-top: 20px;
 }
 
 /* ================================= */
@@ -48,25 +39,23 @@ h2 {
     margin-top: 15px;
 }
 
-/* ================================= */
-/* MOBILE RESPONSIVE */
-/* ================================= */
+.top-buttons button {
+    padding: 10px 16px;
+    border: none;
+    background: #1e6bd6;
+    color: white;
+    cursor: pointer;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: 0.2s;
+}
 
-@media (max-width: 768px) {
-
-    .top-buttons {
-        flex-direction: column;   /* stack vertically */
-        align-items: center;      /* center buttons */
-    }
-
-    .top-buttons button {
-        width: 200px;             /* consistent width */
-    }
-
+.top-buttons button:hover {
+    background: #164fa5;
 }
 
 /* ================================= */
-/* WEATHER CARDS GRID */
+/* WEATHER CARDS */
 /* ================================= */
 
 .weather-cards {
@@ -76,26 +65,23 @@ h2 {
     padding: 30px;
 }
 
-/* Individual card */
-
 .weather-card {
     background: white;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    border-radius: 12px;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
     padding: 20px;
     text-align: center;
-    transition: transform 0.2s;
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .weather-card:hover {
-    transform: scale(1.05);
+    transform: translateY(-5px);
+    box-shadow: 0 8px 18px rgba(0,0,0,0.2);
 }
 
 .weather-icon {
     font-size: 44px;
     margin-bottom: 10px;
-    line-height: 1;
-    text-align: center;
 }
 
 /* ================================= */
@@ -107,16 +93,9 @@ h2 {
     margin: 40px auto;
     padding: 35px;
     border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.15);
     max-width: 1000px;
     text-align: center;
-}
-
-.controls input {
-    display: auto;
-    flex-direction: auto;
-    padding: 8px;
-    margin: 5px;
 }
 
 /* ================================= */
@@ -132,20 +111,27 @@ h2 {
 }
 
 /* ================================= */
-/* INPUT BOXES */
+/* INPUTS */
 /* ================================= */
 
-.form-grid input {
+.form-grid input,
+.admin-form input,
+.admin-form select {
     width: 100%;
-    padding: 14px 16px;
+    padding: 12px 14px;
     font-size: 15px;
     border-radius: 6px;
     border: 1px solid #ccc;
     box-sizing: border-box;
-    height: 45px;
+    transition: 0.2s;
 }
 
-/* Make date field span across */
+input:focus, select:focus {
+    border-color: #1e6bd6;
+    outline: none;
+}
+
+/* DATE FULL WIDTH */
 
 #date {
     grid-column: span 2;
@@ -161,15 +147,14 @@ h2 {
     gap: 15px;
 }
 
-/* Buttons */
-
 .buttons button {
     padding: 10px 15px;
-    margin: 5px;
     background: #1e6bd6;
     border: none;
     color: white;
     cursor: pointer;
+    border-radius: 6px;
+    transition: 0.2s;
 }
 
 .buttons button:hover {
@@ -177,10 +162,93 @@ h2 {
 }
 
 /* ================================= */
-/* MOBILE RESPONSIVE */
+/* ADMIN PANEL */
+/* ================================= */
+
+.admin-form {
+    background: white;
+    margin: 30px auto;
+    padding: 25px;
+    border-radius: 12px;
+    max-width: 900px;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+/* LABEL */
+
+.admin-form label {
+    grid-column: span 2;
+    font-weight: bold;
+    text-align: left;
+    margin-top: 10px;
+}
+
+/* DROPDOWNS */
+
+.admin-form select {
+    background: #f9f9f9;
+}
+
+/* GROUP VISUAL SEPARATION */
+
+.admin-form input:nth-of-type(1),
+.admin-form input:nth-of-type(2) {
+    border-left: 4px solid #007bff; /* Location */
+}
+
+.admin-form input:nth-of-type(3),
+.admin-form input:nth-of-type(4),
+.admin-form input:nth-of-type(5) {
+    border-left: 4px solid #ffc107; /* Condition */
+}
+
+.admin-form input:nth-of-type(6),
+.admin-form input:nth-of-type(7) {
+    border-left: 4px solid #dc3545; /* Alert */
+}
+
+/* DATE */
+
+.admin-form input[type="date"] {
+    grid-column: span 2;
+}
+
+/* BUTTON */
+
+.admin-form button {
+    grid-column: span 2;
+    padding: 12px;
+    background: #28a745;
+    border: none;
+    color: white;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.admin-form button:hover {
+    background: #218838;
+}
+
+/* ================================= */
+/* MOBILE */
 /* ================================= */
 
 @media (max-width: 768px) {
+
+    .top-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .top-buttons button {
+        width: 200px;
+    }
 
     .form-grid {
         grid-template-columns: 1fr;
@@ -192,13 +260,19 @@ h2 {
 
     .buttons {
         flex-direction: column;
-        gap: 12px;
     }
 
     .buttons button {
         width: 100%;
     }
 
+    .admin-form {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-form button {
+        grid-column: span 1;
+    }
 }
 
 /* ================================= */

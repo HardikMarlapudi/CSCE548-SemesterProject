@@ -10,6 +10,13 @@ const temperature = document.getElementById("temperature");
 const humidity = document.getElementById("humidity");
 const date = document.getElementById("date");
 
+const API = {
+    weather: "http://localhost:8081/weather",
+    locations: "http://localhost:8082/locations",
+    conditions: "http://localhost:8083/conditions",
+    alerts: "http://localhost:8084/alerts"
+};
+
 /* ================================= */
 /* INPUT VALIDATION */
 /* ================================= */
@@ -341,8 +348,284 @@ async function deleteRecord() {
 
 }
 
+async function addWeatherAdmin() {
+
+    const city = document.getElementById("adminCity").value;
+    const state = document.getElementById("adminState").value;
+    const condition = document.getElementById("adminCondition").value;
+    const temp = document.getElementById("adminTemp").value;
+    const humidity = document.getElementById("adminHumidity").value;
+    const date = document.getElementById("adminDate").value;
+
+    // BASIC VALIDATION (don’t skip this)
+    if (!city || !state || !condition || !date) {
+        alert("Fill all fields.");
+        return;
+    }
+
+    const data = {
+        cityName: city.trim(),
+        stateName: state.trim(),
+        conditionName: condition.trim().toLowerCase(),
+        temperature: parseFloat(temp),
+        humidity: parseInt(humidity),
+        recordDate: date
+    };
+
+    try {
+
+        const response = await fetch("http://localhost:8081/weather", {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify(data)
+        });
+
+        if (!response.ok) throw new Error("Add failed");
+
+        alert("Admin Record Added");
+
+        // reload UI
+        loadWeatherUI();
+
+    } catch(error) {
+        console.error(error);
+        alert("Admin add failed");
+    }
+}
+
+async function handleAdminAdd() {
+
+    const type = document.getElementById("adminType").value;
+
+    document.getElementById("adminCity").style.display = (type === "location") ? "block" : "none";
+    document.getElementById("adminState").style.display = (type === "location") ? "block" : "none";
+
+    document.getElementById("adminCondition").style.display = (type === "condition") ? "block" : "none";
+    document.getElementById("adminTemp").style.display = (type === "condition") ? "block" : "none";
+    document.getElementById("adminHumidity").style.display = (type === "condition") ? "block" : "none";
+
+    document.getElementById("adminType").addEventListener("change", () => {
+
+        const type = document.getElementById("adminType").value;
+    
+        const isAlert = (type === "alert");
+    
+        // Hide text inputs when alert
+        document.getElementById("adminCity").style.display = isAlert ? "none" : "block";
+        document.getElementById("adminState").style.display = isAlert ? "none" : "block";
+        document.getElementById("adminCondition").style.display = isAlert ? "none" : "block";
+        document.getElementById("adminTemp").style.display = isAlert ? "none" : "block";
+        document.getElementById("adminHumidity").style.display = isAlert ? "none" : "block";
+    
+        // Show dropdowns for alert
+        document.getElementById("locationDropdown").style.display = isAlert ? "block" : "none";
+        document.getElementById("conditionDropdown").style.display = isAlert ? "block" : "none";
+    
+    });
+
+    try {
+
+        // LOCATION
+        if (type === "location") {
+
+            await fetch("http://localhost:8082/locations", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    city_name: city,
+                    state_name: state,
+                    latitude: 0,
+                    longitude: 0
+                })
+            });
+
+            loadLocations();
+        }
+
+        // CONDITION
+        else if (type === "condition") {
+
+            await fetch(API.conditions, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    condition_name: conditionVal,
+                    temperature: temp,
+                    humidity: hum
+                })
+            });
+
+            loadConditions();
+        }
+
+        // ALERT
+        else if (type === "alert") {
+
+            const location_id = document.getElementById("locationDropdown").value;
+            const condition_id = document.getElementById("conditionDropdown").value;
+            const severity = document.getElementById("adminSeverity").value;
+            const description = document.getElementById("adminDescription").value;
+
+            await fetch(API.alerts, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    location_id,
+                    condition_id,
+                    severity,
+                    description
+                })
+            });
+        }
+
+        alert("Success");
+        
+        // reload everything
+        await loadWeatherUI();
+        await loadAlerts();
+        await loadLocations();
+        await loadConditions();
+
+    } catch (err) {
+        console.error(err);
+        alert("Admin failed");
+    }
+}
+
+// FIXED loadConditions
+async function loadConditions() {
+    try {
+        const res = await fetch("http://localhost:8083/conditions");
+
+        if (!res.ok) throw new Error();
+
+        const data = await res.json();
+
+        const dropdown = document.getElementById("conditionDropdown");
+        dropdown.innerHTML = "<option value=''>Select Condition</option>";
+
+        data.forEach(c => {
+            dropdown.innerHTML += `
+                <option value="${c.condition_id}">
+                    ${c.condition_name}
+                </option>
+            `;
+        });
+
+    } catch (err) {
+        console.error(err);
+        alert("Condition service not reachable");
+    }
+}
+
+async function addAlert() {
+
+    const location_id = document.getElementById("locationDropdown").value;
+    const severity = document.getElementById("adminSeverity").value;
+    const description = document.getElementById("adminDescription").value;
+
+    if (!location_id) {
+        alert("Select a location");
+        return;
+    }
+
+    try {
+        const res = await fetch("http://localhost:8084/alerts", { // FIXED PORT
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                location_id,
+                alert_type: "General", // TEMP until condition service exists
+                severity,
+                description
+            })
+        });
+
+        if (!res.ok) throw new Error("Alert failed");
+
+        alert("Alert Added");
+
+    } catch (err) {
+        console.error(err);
+        alert("Alert service not working");
+    }
+}
+
+async function loadAlerts() {
+    try {
+        const res = await fetch("http://localhost:8084/alerts");
+        if (!res.ok) throw new Error();
+
+        const data = await res.json();
+
+        console.log("ALERTS:", data);
+
+        displayAlerts(data);
+
+    } catch (err) {
+        console.error(err);
+        alert("Alert service not reachable");
+    }
+}
+
+async function loadLocations() {
+    try {
+        const res = await fetch("http://localhost:8082/locations");
+
+        if (!res.ok) throw new Error("Location fetch failed");
+
+        const data = await res.json();
+
+        // store globally for your text-input matching
+        window.locationsData = data;
+
+        console.log("Locations loaded:", data);
+
+    } catch (err) {
+        console.error("Location load failed:", err);
+    }
+}
+
+function displayAlerts(alerts) {
+
+    const container = document.getElementById("weatherCards");
+
+    alerts.forEach(alert => {
+
+        const card = document.createElement("div");
+        card.className = "weather-card";
+
+        card.style.border = "2px solid red";
+
+        card.innerHTML = `
+            <h3>🚨 ALERT</h3>
+            <p><b>Severity:</b> ${alert.severity}</p>
+            <p><b>Description:</b> ${alert.description}</p>
+        `;
+
+        container.appendChild(card);
+    });
+}
+
+function findLocationIdByName(name, locations) {
+    return locations.find(l =>
+        (l.city_name + ", " + l.state_name).toLowerCase() === name.toLowerCase()
+    )?.location_id;
+}
+
+function findConditionIdByName(name, conditions) {
+    return conditions.find(c =>
+        c.condition_name.toLowerCase() === name.toLowerCase()
+    )?.condition_id;
+}
+
 /* ================================= */
 /* AUTO LOAD WEATHER */
 /* ================================= */
 
-window.onload = loadWeatherUI;
+window.onload = () => {
+    loadWeatherUI();
+    loadLocations();
+    loadConditions();
+    loadAlerts();
+};
