@@ -10,7 +10,7 @@ public class AlertDAO {
 
         List<Alert> alerts = new ArrayList<>();
 
-        String sql = "SELECT alert_id, location_name, message FROM alerts";
+        String sql = "SELECT alert_id, location_id, alert_type, severity, description FROM alerts";
 
         try (
             Connection conn = DBConnection.getConnection();
@@ -21,8 +21,10 @@ public class AlertDAO {
             while (rs.next()) {
 
                 Alert alert = new Alert(
-                        rs.getString("location_name"),
-                        rs.getString("message")
+                    rs.getInt("location_id"),
+                    rs.getString("alert_type"),
+                    rs.getString("severity"),
+                    rs.getString("description")
                 );
 
                 alert.setAlertId(rs.getInt("alert_id"));
@@ -43,15 +45,17 @@ public class AlertDAO {
     public void addAlert(Alert alert) {
 
         String sql =
-            "INSERT INTO alerts (location_name, message) VALUES (?, ?)";
+            "INSERT INTO alerts (location_id, alert_type, severity, description) VALUES (?, ?, ?, ?)";
 
         try (
             Connection conn = DBConnection.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql)
         ) {
 
-            ps.setString(1, alert.getLocationName());
-            ps.setString(2, alert.getMessage());
+            ps.setInt(1, alert.getLocationId());
+            ps.setString(2, alert.getAlertType());
+            ps.setString(3, alert.getSeverity());
+            ps.setString(4, alert.getDescription());
 
             ps.executeUpdate();
 
@@ -66,16 +70,18 @@ public class AlertDAO {
     public void updateAlert(Alert alert) {
 
         String sql =
-            "UPDATE alerts SET location_name=?, message=? WHERE alert_id=?";
+            "UPDATE alerts SET location_id=?, alert_type=?, severity=?, description=? WHERE alert_id=?";
 
         try (
             Connection conn = DBConnection.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql)
         ) {
 
-            ps.setString(1, alert.getLocationName());
-            ps.setString(2, alert.getMessage());
-            ps.setInt(3, alert.getAlertId());
+            ps.setInt(1, alert.getLocationId());
+            ps.setString(2, alert.getAlertType());
+            ps.setString(3, alert.getSeverity());
+            ps.setString(4, alert.getDescription());
+            ps.setInt(5, alert.getAlertId());
 
             ps.executeUpdate();
 

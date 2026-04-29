@@ -74,25 +74,14 @@ public class ServiceLauncher {
        LOCATION SERVICE
        ================================ */
 
-    private static void startLocationService() {
-
-        Thread locationThread = new Thread(() -> {
-
+       private static void startLocationService() {
+        new Thread(() -> {
             try {
-
                 LocationService locationService = new LocationService();
-                locationService.startService(); // Service handles its own logging
-
+                locationService.startService();
             } catch (Exception e) {
-
-                System.err.println("Location Service failed to start.");
                 e.printStackTrace();
-
             }
-
-        });
-
-        locationThread.setName("Location-Service-Thread");
-        locationThread.start();
+        }).start();
     }
 }

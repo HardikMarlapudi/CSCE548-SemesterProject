@@ -143,59 +143,78 @@ public class AlertService {
     private static class JsonUtil {
 
         public static String toJson(List<Alert> list) {
-
+    
             StringBuilder sb = new StringBuilder();
             sb.append("[\n");
-        
+    
             for (int i = 0; i < list.size(); i++) {
-        
+    
                 Alert a = list.get(i);
-        
+    
                 sb.append("  {\n")
-                  .append("    \"locationName\": \"")
-                  .append(a.getLocationName())
+                  .append("    \"locationId\": ")
+                  .append(a.getLocationId())
+                  .append(",\n")
+                  .append("    \"alertType\": \"")
+                  .append(a.getAlertType())
                   .append("\",\n")
-                  .append("    \"message\": \"")
-                  .append(a.getMessage())
+                  .append("    \"severity\": \"")
+                  .append(a.getSeverity())
+                  .append("\",\n")
+                  .append("    \"description\": \"")
+                  .append(a.getDescription())
                   .append("\"\n")
                   .append("  }");
-        
+    
                 if (i < list.size() - 1)
                     sb.append(",");
-        
+    
                 sb.append("\n");
             }
-        
+    
             sb.append("]");
-        
+    
             return sb.toString();
         }
-
+    
         public static Alert fromJson(String json) {
-
-            String locationName =
-                    extractValue(json, "locationName");
-
-            String message =
-                    extractValue(json, "message");
-
-            return new Alert(locationName, message);
+    
+            int locationId = Integer.parseInt(extractValue(json, "locationId"));
+            String alertType = extractValue(json, "alertType");
+            String severity = extractValue(json, "severity");
+            String description = extractValue(json, "description");
+    
+            return new Alert(locationId, alertType, severity, description);
         }
-
+    
         private static String extractValue(String json, String key) {
-
-            String pattern = "\"" + key + "\":\"";
-
+    
+            String pattern = "\"" + key + "\":";
+    
             int start = json.indexOf(pattern);
-
+    
             if (start == -1)
                 return "";
-
+    
             start += pattern.length();
-
-            int end = json.indexOf("\"", start);
-
-            return json.substring(start, end);
+    
+            // Handle numbers (locationId)
+            if (Character.isDigit(json.charAt(start))) {
+                int end = start;
+                while (end < json.length() && Character.isDigit(json.charAt(end))) {
+                    end++;
+                }
+                return json.substring(start, end);
+            }
+    
+            // Handle strings
+            if (json.charAt(start) == '\"') {
+                start++;
+                int end = json.indexOf("\"", start);
+                return json.substring(start, end);
+            }
+    
+            return "";
         }
     }
 }

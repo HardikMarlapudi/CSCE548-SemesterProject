@@ -5,27 +5,46 @@ public class Alert implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private int alertId;
-    private String locationName;
-    private String message;
+    private int locationId;
+    private String alertType;
+    private String severity;
+    private String description;
 
     // REQUIRED for JSON/Jackson
     public Alert() {}
 
+    public Alert(int locationId, String alertType, String severity, String description) {
+        setLocationId(locationId);
+        setAlertType(alertType);
+        setSeverity(severity);
+        setDescription(description);
+    }
+
     public Alert(String locationName, String message) {
-        setLocationName(locationName);
-        setMessage(message);
+        this.locationId = 0; // default since old version didn’t use ID
+        this.alertType = locationName;
+        this.severity = "N/A";
+        this.description = message;
     }
 
     public int getAlertId() {
         return alertId;
     }
 
-    public String getLocationName() {
-        return locationName;
+    public int getLocationId() {
+        return locationId;
     }
 
-    public String getMessage() {
-        return message;
+    public String getAlertType() {
+        return alertType;
+    }
+
+    public String getSeverity() {
+        return severity;
+    }
+
+    public String getDescription() {
+        return description;
     }
 
     public void setAlertId(int alertId) {
@@ -35,25 +54,40 @@ public class Alert implements Serializable {
         this.alertId = alertId;
     }
 
-    public void setLocationName(String locationName) {
-        if (locationName == null || locationName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Location cannot be empty");
+    public void setLocationId(int locationId) {
+        if (locationId < 0) {
+            throw new IllegalArgumentException("Invalid Location ID");
         }
-        this.locationName = locationName.trim();
+        this.locationId = locationId;
     }
 
-    public void setMessage(String message) {
-        if (message == null || message.trim().isEmpty()) {
-            throw new IllegalArgumentException("Message cannot be empty");
+    public void setAlertType(String alertType) {
+        if (alertType == null || alertType.trim().isEmpty()) {
+            throw new IllegalArgumentException("Alert type cannot be empty");
         }
-        this.message = message.trim();
+        this.alertType = alertType.trim();
+    }
+
+    public void setSeverity(String severity) {
+        if (severity == null || severity.trim().isEmpty()) {
+            throw new IllegalArgumentException("Severity cannot be empty");
+        }
+        this.severity = severity.trim();
+    }
+
+    public void setDescription(String description) {
+        if (description == null || description.trim().isEmpty()) {
+            throw new IllegalArgumentException("Description cannot be empty");
+        }
+        this.description = description.trim();
     }
 
     @Override
     public String toString() {
-        return alertId + " | Location: " +
-               locationName +
-               " | Message: " +
-               message;
+        return alertId +
+               " | Location ID: " + locationId +
+               " | Type: " + alertType +
+               " | Severity: " + severity +
+               " | Description: " + description;
     }
 }

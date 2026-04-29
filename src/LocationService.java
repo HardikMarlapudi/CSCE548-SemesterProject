@@ -50,10 +50,12 @@ public class LocationService {
         }
         catch (Exception e) {
 
+            e.printStackTrace(); // 🔥 IMPORTANT
+        
             statusCode = 500;
-            response = "{\"error\":\"Server Error\"}";
+            response = "{\"error\":\"" + e.getMessage() + "\"}";
         }
-
+        
         byte[] bytes =
                 response.getBytes(StandardCharsets.UTF_8);
 

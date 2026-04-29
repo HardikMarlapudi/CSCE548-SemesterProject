@@ -56,20 +56,35 @@ public class AlertBusiness {
             throw new IllegalArgumentException("Alert cannot be null");
         }
 
-        String location = alert.getLocationName();
-        String message = alert.getMessage();
+        // NEW MODEL FIELDS
+        int locationId = alert.getLocationId();
+        String alertType = alert.getAlertType();
+        String severity = alert.getSeverity();
+        String description = alert.getDescription();
 
-        if (location == null || location.trim().isEmpty()) {
-            throw new IllegalArgumentException("Location cannot be empty");
+        // Validate location ID
+        if (locationId < 0) {
+            throw new IllegalArgumentException("Invalid location ID");
         }
 
-        if (message == null || message.trim().isEmpty()) {
-            throw new IllegalArgumentException("Message cannot be empty");
+        // Validate alert type
+        if (alertType == null || alertType.trim().isEmpty()) {
+            throw new IllegalArgumentException("Alert type cannot be empty");
+        }
+
+        // Validate severity
+        if (severity == null || severity.trim().isEmpty()) {
+            throw new IllegalArgumentException("Severity cannot be empty");
+        }
+
+        // Validate description
+        if (description == null || description.trim().isEmpty()) {
+            throw new IllegalArgumentException("Description cannot be empty");
         }
 
         // Prevent extremely large payloads
-        if (message.length() > 255) {
-            throw new IllegalArgumentException("Message too long");
+        if (description.length() > 255) {
+            throw new IllegalArgumentException("Description too long");
         }
     }
 }
