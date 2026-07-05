@@ -72,6 +72,7 @@ h2, h3 {
     padding: 20px;
     text-align: center;
     transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
 }
 
 .weather-card:hover {
