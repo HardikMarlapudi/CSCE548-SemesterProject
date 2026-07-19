@@ -17,7 +17,7 @@ const date = document.getElementById("date");
 const API = {
     weather: "http://localhost:8081/weather",
     alerts: "http://localhost:8082/alerts",
-    locations: "http://localhost:8083/locations" // ✅ CORRECT
+    locations: "http://localhost:8083/locations"
 };
 
 /* ================================= */
@@ -43,6 +43,64 @@ function getWeatherIcon(condition) {
 /* DISPLAY WEATHER */
 /* ================================= */
 
+function getStateAbbreviation(state) {
+
+        const states = {
+            "Alabama": "AL",
+            "Alaska": "AK",
+            "Arizona": "AZ",
+            "Arkansas": "AR",
+            "California": "CA",
+            "Colorado": "CO",
+            "Connecticut": "CT",
+            "Delaware": "DE",
+            "Florida": "FL",
+            "Georgia": "GA",
+            "Hawaii": "HI",
+            "Idaho": "ID",
+            "Illinois": "IL",
+            "Indiana": "IN",
+            "Iowa": "IA",
+            "Kansas": "KS",
+            "Kentucky": "KY",
+            "Louisiana": "LA",
+            "Maine": "ME",
+            "Maryland": "MD",
+            "Massachusetts": "MA",
+            "Michigan": "MI",
+            "Minnesota": "MN",
+            "Mississippi": "MS",
+            "Missouri": "MO",
+            "Montana": "MT",
+            "Nebraska": "NE",
+            "Nevada": "NV",
+            "New Hampshire": "NH",
+            "New Jersey": "NJ",
+            "New Mexico": "NM",
+            "New York": "NY",
+            "North Carolina": "NC",
+            "North Dakota": "ND",
+            "Ohio": "OH",
+            "Oklahoma": "OK",
+            "Oregon": "OR",
+            "Pennsylvania": "PA",
+            "Rhode Island": "RI",
+            "South Carolina": "SC",
+            "South Dakota": "SD",
+            "Tennessee": "TN",
+            "Texas": "TX",
+            "Utah": "UT",
+            "Vermont": "VT",
+            "Virginia": "VA",
+            "Washington": "WA",
+            "West Virginia": "WV",
+            "Wisconsin": "WI",
+            "Wyoming": "WY"
+        };
+    
+    return states[state] || state;
+}
+
 function displayWeather(data) {
 
     const container = document.getElementById("weatherCards");
@@ -62,7 +120,7 @@ function displayWeather(data) {
 
         card.innerHTML = `
             <div style="font-size: 30px">${icon}</div>
-            <h3>${record.cityName}, ${record.stateName}</h3>
+            <h3>${record.cityName}, ${getStateAbbreviation(record.stateName)}</h3>
             <p><b>Condition:</b> ${record.conditionName}</p>
             <p><b>Temp:</b> ${record.temperature}°F</p>
             <p><b>Humidity:</b> ${record.humidity}%</p>
@@ -98,11 +156,69 @@ async function loadWeatherUI() {
     }
 }
 
+async function loadWeatherJSON() {
+
+    try {
+        const res = await fetch(API.weather);
+        const data = await res.json();
+        
+        console.log("============ WEATHER JSON =============");
+        console.log(data);
+
+    } catch (error) {
+        console.error("Weather JSON error: ", error);
+    }
+}
+
+function showStatus(message,type) {
+
+    const box = document.getElementById("statusMessage");
+
+    box.textContent = message;
+
+    box.className = "status-message";
+
+    if(type === "success") {
+        box.classList.add("status-success");
+    } else {
+        box.classList.add("status-error");
+    }
+
+    box.style.display="block";
+    setTimeout(() => {box.style.display = "none"}, 3000);
+
+}
+
+function handleAdminAction() {
+
+    const adminType = document.getElementById("adminType").value;
+
+    switch(adminType) {
+        case "station":
+            addStation();
+            break;
+        case "location":
+            addLocation();
+            break;
+        case "condition":
+            addCondition();
+            break;
+        case "alert":
+            addAlert();
+            break;
+        }
+}
+
 /* ================================= */
 /* WEATHER CRUD */
 /* ================================= */
 
 async function addRecord() {
+
+    if(city.value === "" || state.value === "" || condition.value === "" || temperature.value === "" || humidity.value === "" || date.value === "") {
+        alert("Fill out all fields.");
+        return;
+    }
 
     const data = {
         cityName: city.value,
@@ -113,13 +229,25 @@ async function addRecord() {
         recordDate: date.value
     };
 
-    await fetch(API.weather, {
+    const response = await fetch(API.weather, {
         method: "POST",
-        headers: {"Content-Type":"application/json"},
+        headers: {
+            "Content-Type": "application/json"
+        },
         body: JSON.stringify(data)
     });
+    
+    if (!response.ok) {
+        alert("Request failed.");
+        return;
+    }
+    
+    clearWeatherForm();
 
-    loadWeatherUI();
+    await loadWeatherUI();
+    await loadWeatherJSON();
+    await loadLocations();
+
 }
 
 async function updateRecord() {
@@ -135,24 +263,44 @@ async function updateRecord() {
         recordDate: date.value
     };
 
-    await fetch(`${API.weather}/${recordId.value}`, {
+    const response = await fetch(`${API.weather}/${recordId.value}`, {
         method: "PUT",
-        headers: {"Content-Type":"application/json"},
+        headers: {
+            "Content-Type": "application/json"
+        },
         body: JSON.stringify(data)
     });
+    
+    if (!response.ok) {
+        alert("Request failed.");
+        return;
+    }
 
-    loadWeatherUI();
+    clearWeatherForm();
+
+    await loadWeatherUI();
+    await loadWeatherJSON();
+    await loadLocations();
+
 }
 
 async function deleteRecord() {
 
     if (!recordId.value) return alert("Select record");
 
-    await fetch(`${API.weather}/${recordId.value}`, {
+    const response = await fetch(`${API.weather}/${recordId.value}`, {
         method: "DELETE"
     });
-
+    
+    if (!response.ok) {
+        alert("Delete failed.");
+        return;
+    }
+    
+    clearWeatherForm();
     loadWeatherUI();
+    loadWeatherJSON();
+
 }
 
 /* ================================= */
@@ -178,10 +326,10 @@ async function loadLocations() {
             `;
         });
 
-        console.log("✅ Locations working on 8083:", data);
+        console.log("Locations working on 8083:", data);
 
     } catch (err) {
-        console.error("❌ 8083 ERROR:", err);
+        console.error("8083 ERROR:", err);
         alert("Location service (8083) not reachable");
     }
 }
@@ -195,22 +343,42 @@ async function addAlert() {
     const locationId = parseInt(document.getElementById("locationDropdown").value);
     const severity = document.getElementById("adminSeverity").value;
     const description = document.getElementById("adminDescription").value;
+    const alertDate = document.getElementById("alertDate").value;
 
-    if (!locationId) return alert("Select a location");
+    console.log(document.getElementById("alertDate"));
 
-    await fetch(API.alerts, {
+    if (!locationId) {
+        alert("Select a location");
+        return;
+    }
+
+    const response = await fetch(API.alerts, {
         method: "POST",
-        headers: {"Content-Type":"application/json"},
+        headers: {
+            "Content-Type": "application/json"
+        },
         body: JSON.stringify({
             locationId,
             alertType: "General",
             severity,
-            description
+            description,
+            alertDate
         })
     });
 
+    console.log("Status:", response.status);
+
+    const text = await response.text();
+    console.log("Response:", text);
+
+    if (!response.ok) {
+        alert("Unable to add alert.");
+        return;
+    }
+
     loadAlerts();
-}
+
+} 
 
 async function loadAlerts() {
     try {
@@ -223,9 +391,40 @@ async function loadAlerts() {
     }
 }
 
+async function addStation() {
+    const stationName = document.getElementById("adminStationName").value;
+    const city = document.getElementById("adminCity").value;
+    const state = document.getElementById("adminState").value;
+
+    const response = await fetch("http://localhost:8083/locations", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({
+            stationName,
+            city,
+            state
+        })
+    });
+
+    if(!response.ok) {
+        alert("Request failed");
+        return;
+    }
+
+    loadLocations();
+}
+
+async function addLocation() {
+    alert("Location feature coming next.");
+}
+
+async function addCondition() {
+    alert("Condition feature coming next.");
+}
+
 function displayAlerts(alerts) {
 
-    const container = document.getElementById("weatherCards");
+    const container = document.getElementById("alertCards");
     container.innerHTML = "";
 
     alerts.forEach(a => {
@@ -245,12 +444,50 @@ function displayAlerts(alerts) {
     });
 }
 
+function changeAdminSection() {
+
+    document.querySelectorAll(".admin-section").forEach(section => {
+        section.style.display = "none";
+    });
+
+    const value = document.getElementById("adminType").value;
+
+    if(value === "station") {
+        document.getElementById("stationSection").style.display = "block";
+    }
+
+    else if (value === "location") {
+        document.getElementById("locationSection").style.display = "block";
+    }
+
+    else if(value === "condition") {
+        document.getElementById("conditionSection").style.display = "block";
+    } 
+
+    else {
+        document.getElementById("alertSection").style.display = "block";
+    }
+}
+
+function clearWeatherForm() {
+    recordId.value = "";
+    city.value = "";
+    state.value = "";
+    condition.value = "";
+    temperature.value = "";
+    humidity.value = "";
+    date.value = "";
+}
+
 /* ================================= */
 /* INIT */
 /* ================================= */
 
 window.onload = () => {
     loadWeatherUI();
-    loadLocations(); // 🔥 THIS CONFIRMS 8083
+    loadWeatherJSON();
+    loadLocations();
     loadAlerts();
+    changeAdminSection();
+
 };

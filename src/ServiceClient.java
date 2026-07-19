@@ -6,63 +6,97 @@ import java.nio.charset.StandardCharsets;
 
 public class ServiceClient {
 
+    private static final String WEATHER_URL = "http://localhost:8081/weather";
+
+    private static final String ALERT_URL = "http://localhost:8082/alerts";
+
+    private static final String LOCATION_URL = "http://localhost:8083/locations";
+
     public static void main(String[] args) {
 
-        System.out.println("Weather Service Response:");
-        callService("http://localhost:8081/weather");
+        System.out.println("============================================");
+        System.out.println("Weather Management System Client");
+        System.out.println("============================================");
 
-        System.out.println("\nAlert Service Response:");
-        callService("http://localhost:8082/alerts");
+        callService("Weather Service", WEATHER_URL);
 
-        System.out.println("\nLocation Service Response:");
-        callService("http://localhost:8083/locations");
+        callService("Alert Service", ALERT_URL);
+
+        callService("Location Service", LOCATION_URL);
+
+        System.out.println("\n All service request completed.");
     }
 
-    private static void callService(String urlStr) {
+    private static void callService(String serviceName, String urlString) {
+
+        HttpURLConnection connection = null;
 
         try {
+            long startTime = System.currentTimeMillis();
+            
+            URL url = new URL(urlString);
 
-            URL url = new URL(urlStr);
+            connection = (HttpURLConnection) url.openConnection();
 
-            HttpURLConnection conn =
-                    (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
 
-            // =====================
-            // Secure Configuration
-            // =====================
-            conn.setRequestMethod("GET");
-            conn.setConnectTimeout(5000);
-            conn.setReadTimeout(5000);
+            connection.setConnectTimeout(5000);
 
-            int status = conn.getResponseCode();
+            connection.setReadTimeout(5000);
 
-            // =====================
-            // Validate Response
-            // =====================
-            if (status != 200) {
-                System.out.println("Request failed. HTTP Status: " + status);
+            connection.setRequestProperty(
+                "Accept",
+                "application/json"
+            );
+
+            int status = connection.getResponseCode();
+
+            System.out.println("\n------------------------------------------------");
+            System.out.println(serviceName);
+            System.out.println("----------------------------------------");
+            System.out.println("URL: " + urlString);
+            System.out.println("HTTP Status: " + status);
+
+            if (status != HttpURLConnection.HTTP_OK) {
+
+                System.out.println("Request failed.");
+
                 return;
             }
 
-            // =====================
-            // Safe Resource Handling
-            // =====================
-            try (BufferedReader reader =
-                     new BufferedReader(
-                         new InputStreamReader(
-                             conn.getInputStream(),
-                             StandardCharsets.UTF_8))) {
+            System.out.println("\nResponse:");
 
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    System.out.println(line);
+            try (
+                BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(
+                        connection.getInputStream(),
+                        StandardCharsets.UTF_8))
+                ) {
+                    String line;
+
+                    while ((line = reader.readLine()) != null) {
+                        System.out.println(line);
+                    }
                 }
+
+                long elasped = System.currentTimeMillis() - startTime;
+
+                System.out.println("\nResponse Time: " + elasped + " ms");
+            
+            } catch (Exception e) {
+
+                System.out.println("\n----------------------------------------");
+                System.out.println(serviceName);
+                System.out.println("------------------------------------------");
+                System.out.println("Service unavalibale");
+                System.out.println("URL: " + urlString);
+                System.out.println("Reason: " + e.getMessage());
             }
 
-            conn.disconnect();
-
-        } catch (Exception e) {
-            System.out.println("Service unavailable: " + urlStr);
+            finally {
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
         }
     }
-}

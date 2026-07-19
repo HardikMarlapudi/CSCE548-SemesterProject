@@ -1,72 +1,95 @@
-public class Station {
+import java.io.Serializable;
+
+public class Station implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private int stationId;
+    private int locationId;
     private String stationName;
-    private String locationName;
 
     // =====================
-    // Default Constructor
+    // Constructors
     // =====================
-    public Station() {}
 
-    // =====================
-    // Parameterized Constructor
-    // =====================
-    public Station(int stationId,
-                   String stationName,
-                   String locationName) {
+    public Station() {
+    }
 
+    public Station(int stationId, int locationId, String stationName) {
         setStationId(stationId);
+        setLocationId(locationId);
         setStationName(stationName);
-        setLocationName(locationName);
+    }
+
+    public Station(int locationId, String stationName) {
+        this(0, locationId, stationName);
     }
 
     // =====================
     // Getters
     // =====================
+
     public int getStationId() {
         return stationId;
+    }
+
+    public int getLocationId() {
+        return locationId;
     }
 
     public String getStationName() {
         return stationName;
     }
 
-    public String getLocationName() {
-        return locationName;
-    }
+    // =====================
+    // Setters
+    // =====================
 
-    // =====================
-    // Setters with Validation
-    // =====================
     public void setStationId(int stationId) {
-        if (stationId < 0)
-            throw new IllegalArgumentException("Invalid station ID");
+
+        if (stationId < 0) {
+            throw new IllegalArgumentException("Station ID cannot be negative.");
+        }
 
         this.stationId = stationId;
     }
 
-    public void setStationName(String stationName) {
-        if (stationName == null || stationName.trim().isEmpty())
-            throw new IllegalArgumentException("Station name required");
+    public void setLocationId(int locationId) {
 
-        this.stationName = stationName.trim();
+        if (locationId < 0) {
+            throw new IllegalArgumentException("Location ID cannot be negative.");
+        }
+    
+        this.locationId = locationId;
     }
 
-    public void setLocationName(String locationName) {
-        if (locationName == null || locationName.trim().isEmpty())
-            throw new IllegalArgumentException("Location name required");
+    public void setStationName(String stationName) {
 
-        this.locationName = locationName.trim();
+        if (stationName == null || stationName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Station name is required.");
+        }
+
+        stationName = stationName.trim();
+
+        if (stationName.length() > 100) {
+            throw new IllegalArgumentException(
+                    "Station name cannot exceed 100 characters.");
+        }
+
+        this.stationName = stationName;
     }
 
     // =====================
     // toString()
     // =====================
+
     @Override
     public String toString() {
-        return stationId + " | " +
-               stationName + " | " +
-               locationName;
+
+        return "Station{" +
+                "stationId=" + stationId +
+                ", locationId=" + locationId +
+                ", stationName='" + stationName + '\'' +
+                '}';
     }
 }

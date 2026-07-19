@@ -1,24 +1,23 @@
-import java.util.ArrayList;
+import java.util.List;
 
 public class LocationBusiness {
 
-    private LocationDAO locationDAO = new LocationDAO();
+    private final LocationDAO locationDAO = new LocationDAO();
 
-    // ==========================
-    // READ
-    // ==========================
-    public ArrayList<Location> getAllLocations() {
+
+    public List<Location> getAllLocations() {
 
         try {
             return locationDAO.getAllLocations();
         } catch (Exception e) {
-            throw new RuntimeException("Unable to retrieve locations", e);
+            throw new RuntimeException("Unable to retreive locations.", e);
         }
     }
 
-    // ==========================
+    // ===========================
     // CREATE
-    // ==========================
+    // ===========================
+
     public void addLocation(Location location) {
 
         validateLocation(location);
@@ -26,17 +25,18 @@ public class LocationBusiness {
         try {
             locationDAO.addLocation(location);
         } catch (Exception e) {
-            throw new RuntimeException("Error adding location", e);
+            throw new RuntimeException("Error adding location.", e);
         }
     }
 
-    // ==========================
+    // ===========================
     // UPDATE
-    // ==========================
+    // ===========================
+
     public void updateLocation(Location location) {
 
-        if (location.getLocationId() <= 0) {
-            throw new IllegalArgumentException("Invalid Location ID");
+        if(location == null || location.getLocationId() <= 0) {
+            throw new RuntimeException("Invalid location ID.");
         }
 
         validateLocation(location);
@@ -44,41 +44,67 @@ public class LocationBusiness {
         try {
             locationDAO.updateLocation(location);
         } catch (Exception e) {
-            throw new RuntimeException("Error updating location", e);
+            throw new RuntimeException("Invalid locaiton ID.");
         }
     }
 
-    // ==========================
-    // DELETE
-    // ==========================
-    public void deleteLocation(int id) {
 
-        if (id <= 0) {
-            throw new IllegalArgumentException("Invalid Location ID");
+    // ===========================
+    // DELETE
+    // ===========================
+
+    public void deleteLocation(int locationId) {
+
+        if(locationId <= 0) {
+            throw new RuntimeException("Invalid location ID.");
         }
 
         try {
-            locationDAO.deleteLocation(id);
+            locationDAO.deleteLocation(locationId);
         } catch (Exception e) {
-            throw new RuntimeException("Error deleting location", e);
+            throw new RuntimeException("Error deleting location.", e);
         }
     }
 
-    // ==========================
+    // ===========================
     // BUSINESS VALIDATION
-    // ==========================
-    private void validateLocation(Location location) {
+    // ===========================
 
-        if (location == null)
-            throw new IllegalArgumentException("Location cannot be null");
+    public void validateLocation(Location location) {
 
-        if (location.getCity().isBlank())
-            throw new IllegalArgumentException("City cannot be empty");
+        if(location == null) {
+            throw new RuntimeException("Location cannot be null.");
+        }
+        
+        String city = location.getCity();
+        String state = location.getState();
+        String country = location.getCountry();
 
-        if (location.getState().isBlank())
-            throw new IllegalArgumentException("State cannot be empty");
+        // City
+        if (city == null || city.trim().isEmpty()) {
+            throw new IllegalArgumentException("City cannot be empty.");
+        }
 
-        if (location.getCountry().isBlank())
-            throw new IllegalArgumentException("Country cannot be empty");
+        if(city.length() > 100) {
+            throw new IllegalArgumentException("City cannot exceed 100 characters.");
+        }
+
+        // State
+        if (state == null || state.trim().isEmpty()) {
+            throw new IllegalArgumentException("State cannot be empty.");
+        }
+
+        if (state.length() > 100) {
+            throw new IllegalArgumentException("State name is too long.");
+        }
+
+        // Country 
+        if (country == null || country.trim().isEmpty()) {
+            throw new IllegalArgumentException("Country cannot be empty.");
+        }
+
+        if (country.length() > 100) {
+            throw new IllegalArgumentException("Country name is too long.");
+        }
     }
 }

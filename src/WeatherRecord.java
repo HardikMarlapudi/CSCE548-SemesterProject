@@ -1,63 +1,102 @@
+import java.io.Serializable;
 import java.sql.Date;
 
-/*
- * WeatherRecord
- * Model class representing a weather record in the system
- */
+public class WeatherRecord implements Serializable {
 
-public class WeatherRecord {
+    private static final long serialVersionUID = 1L;
+
+    // =====================
+    // Database Fields
+    // =====================
 
     private int recordId;
-    private String cityName;
-    private String stateName;
-    private String conditionName;
+    private int locationId;
+    private int stationId;
+    private int conditionId;
+
     private double temperature;
     private int humidity;
     private Date recordDate;
 
-    /* =====================================
-       DEFAULT CONSTRUCTOR
-       ===================================== */
+    // =====================
+    // Display Fields
+    // =====================
 
-    public WeatherRecord() {}
+    private String cityName;
+    private String stateName;
+    private String stationName;
+    private String conditionName;
 
-    /* =====================================
-       PARAMETERIZED CONSTRUCTOR
-       ===================================== */
+    // =====================
+    // Default Constructor
+    // =====================
 
-    public WeatherRecord(String cityName,
-                         String stateName,
-                         String conditionName,
-                         double temperature,
-                         int humidity,
-                         Date recordDate) {
+    public WeatherRecord() {
+    }
 
-        setCityName(cityName);
-        setStateName(stateName);
-        setConditionName(conditionName);
+    // =====================
+    // Constructor with ID
+    // =====================
+
+    public WeatherRecord(
+            int recordId,
+            int locationId,
+            int stationId,
+            int conditionId,
+            double temperature,
+            int humidity,
+            Date recordDate) {
+
+        setRecordId(recordId);
+        setLocationId(locationId);
+        setStationId(stationId);
+        setConditionId(conditionId);
         setTemperature(temperature);
         setHumidity(humidity);
         setRecordDate(recordDate);
     }
 
-    /* =====================================
-       GETTERS
-       ===================================== */
+    // =====================
+    // Constructor without ID
+    // =====================
+
+    public WeatherRecord(
+            int locationId,
+            int stationId,
+            int conditionId,
+            double temperature,
+            int humidity,
+            Date recordDate) {
+
+        this(
+                0,
+                locationId,
+                stationId,
+                conditionId,
+                temperature,
+                humidity,
+                recordDate
+        );
+    }
+
+    // =====================
+    // Getters
+    // =====================
 
     public int getRecordId() {
         return recordId;
     }
 
-    public String getCityName() {
-        return cityName;
+    public int getLocationId() {
+        return locationId;
     }
 
-    public String getStateName() {
-        return stateName;
+    public int getStationId() {
+        return stationId;
     }
 
-    public String getConditionName() {
-        return conditionName;
+    public int getConditionId() {
+        return conditionId;
     }
 
     public double getTemperature() {
@@ -72,52 +111,71 @@ public class WeatherRecord {
         return recordDate;
     }
 
-    /* =====================================
-       SETTERS WITH VALIDATION
-       ===================================== */
+    public String getCityName() {
+        return cityName;
+    }
+
+    public String getStateName() {
+        return stateName;
+    }
+
+    public String getStationName() {
+        return stationName;
+    }
+
+    public String getConditionName() {
+        return conditionName;
+    }
+
+    // =====================
+    // Setters
+    // =====================
 
     public void setRecordId(int recordId) {
 
         if (recordId < 0) {
-            throw new IllegalArgumentException("Record ID cannot be negative");
+            throw new IllegalArgumentException(
+                    "Record ID cannot be negative.");
         }
 
         this.recordId = recordId;
     }
 
-    public void setCityName(String cityName) {
+    public void setLocationId(int locationId) {
 
-        if (cityName == null || cityName.trim().isEmpty()) {
-            throw new IllegalArgumentException("City name is required");
+        if (locationId <= 0) {
+            throw new IllegalArgumentException(
+                    "Invalid location ID.");
         }
 
-        this.cityName = cityName.trim();
+        this.locationId = locationId;
     }
 
-    public void setStateName(String stateName) {
+    public void setStationId(int stationId) {
 
-        if (stateName == null || stateName.trim().isEmpty()) {
-            throw new IllegalArgumentException("State name is required");
+        if (stationId <= 0) {
+            throw new IllegalArgumentException(
+                    "Invalid station ID.");
         }
 
-        this.stateName = stateName.trim();
+        this.stationId = stationId;
     }
 
-    public void setConditionName(String conditionName) {
+    public void setConditionId(int conditionId) {
 
-        if (conditionName == null || conditionName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Weather condition is required");
+        if (conditionId <= 0) {
+            throw new IllegalArgumentException(
+                    "Invalid condition ID.");
         }
 
-        this.conditionName = conditionName.trim();
+        this.conditionId = conditionId;
     }
 
     public void setTemperature(double temperature) {
 
         if (temperature < -100 || temperature > 150) {
             throw new IllegalArgumentException(
-                "Temperature must be between -100°F and 150°F"
-            );
+                    "Temperature must be between -100 and 150.");
         }
 
         this.temperature = temperature;
@@ -127,8 +185,7 @@ public class WeatherRecord {
 
         if (humidity < 0 || humidity > 100) {
             throw new IllegalArgumentException(
-                "Humidity must be between 0 and 100"
-            );
+                    "Humidity must be between 0 and 100.");
         }
 
         this.humidity = humidity;
@@ -137,24 +194,45 @@ public class WeatherRecord {
     public void setRecordDate(Date recordDate) {
 
         if (recordDate == null) {
-            throw new IllegalArgumentException("Record date is required");
+            throw new IllegalArgumentException(
+                    "Record date cannot be null.");
         }
 
         this.recordDate = recordDate;
     }
 
-    /* =====================================
-       STRING REPRESENTATION
-       ===================================== */
+    public void setCityName(String cityName) {
+        this.cityName = cityName;
+    }
+
+    public void setStateName(String stateName) {
+        this.stateName = stateName;
+    }
+
+    public void setStationName(String stationName) {
+        this.stationName = stationName;
+    }
+
+    public void setConditionName(String conditionName) {
+        this.conditionName = conditionName;
+    }
+
+    // =====================
+    // toString()
+    // =====================
 
     @Override
     public String toString() {
 
         return "WeatherRecord{" +
                 "recordId=" + recordId +
-                ", city='" + cityName + '\'' +
-                ", state='" + stateName + '\'' +
-                ", condition='" + conditionName + '\'' +
+                ", locationId=" + locationId +
+                ", stationId=" + stationId +
+                ", conditionId=" + conditionId +
+                ", cityName='" + cityName + '\'' +
+                ", stateName='" + stateName + '\'' +
+                ", stationName='" + stationName + '\'' +
+                ", conditionName='" + conditionName + '\'' +
                 ", temperature=" + temperature +
                 ", humidity=" + humidity +
                 ", recordDate=" + recordDate +

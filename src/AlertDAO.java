@@ -1,5 +1,6 @@
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AlertDAO {
 
@@ -10,21 +11,31 @@ public class AlertDAO {
 
         List<Alert> alerts = new ArrayList<>();
 
-        String sql = "SELECT alert_id, location_id, alert_type, severity, description FROM alerts";
+        String sql = """
+                SELECT alert_id,
+                       location_id,
+                       alert_type,
+                       severity,
+                       description,
+                       alert_date
+                FROM alerts
+                ORDER BY alert_id
+                """;
 
         try (
-            Connection conn = DBConnection.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery()
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()
         ) {
 
             while (rs.next()) {
 
                 Alert alert = new Alert(
-                    rs.getInt("location_id"),
-                    rs.getString("alert_type"),
-                    rs.getString("severity"),
-                    rs.getString("description")
+                        rs.getInt("location_id"),
+                        rs.getString("alert_type"),
+                        rs.getString("severity"),
+                        rs.getString("description"),
+                        rs.getString("alert_date")
                 );
 
                 alert.setAlertId(rs.getInt("alert_id"));
@@ -33,7 +44,7 @@ public class AlertDAO {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException("Database error retrieving alerts", e);
+            throw new RuntimeException("Database error retrieving alerts.", e);
         }
 
         return alerts;
@@ -44,23 +55,27 @@ public class AlertDAO {
     // ======================
     public void addAlert(Alert alert) {
 
-        String sql =
-            "INSERT INTO alerts (location_id, alert_type, severity, description) VALUES (?, ?, ?, ?)";
+        String sql = """
+                INSERT INTO alerts
+                (location_id, alert_type, severity, description, alert_date)
+                VALUES (?, ?, ?, ?, ?)
+                """;
 
         try (
-            Connection conn = DBConnection.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql)
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)
         ) {
 
             ps.setInt(1, alert.getLocationId());
             ps.setString(2, alert.getAlertType());
             ps.setString(3, alert.getSeverity());
             ps.setString(4, alert.getDescription());
+            ps.setString(5, alert.getAlertDate());
 
             ps.executeUpdate();
 
         } catch (SQLException e) {
-            throw new RuntimeException("Error adding alert", e);
+            throw new RuntimeException("Error adding alert.", e);
         }
     }
 
@@ -69,24 +84,36 @@ public class AlertDAO {
     // ======================
     public void updateAlert(Alert alert) {
 
-        String sql =
-            "UPDATE alerts SET location_id=?, alert_type=?, severity=?, description=? WHERE alert_id=?";
+        String sql = """
+                UPDATE alerts
+                SET location_id = ?,
+                    alert_type = ?,
+                    severity = ?,
+                    description = ?,
+                    alert_date = ?
+                WHERE alert_id = ?
+                """;
 
         try (
-            Connection conn = DBConnection.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql)
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)
         ) {
 
             ps.setInt(1, alert.getLocationId());
             ps.setString(2, alert.getAlertType());
             ps.setString(3, alert.getSeverity());
             ps.setString(4, alert.getDescription());
-            ps.setInt(5, alert.getAlertId());
+            ps.setString(5, alert.getAlertDate());
+            ps.setInt(6, alert.getAlertId());
 
             ps.executeUpdate();
 
+            if (ps.getUpdateCount() == 0) {
+                throw new RuntimeException("Alert not found.");
+            }
+
         } catch (SQLException e) {
-            throw new RuntimeException("Error updating alert", e);
+            throw new RuntimeException("Error updating alert.", e);
         }
     }
 
@@ -95,18 +122,23 @@ public class AlertDAO {
     // ======================
     public void deleteAlert(int alertId) {
 
-        String sql = "DELETE FROM alerts WHERE alert_id=?";
+        String sql = "DELETE FROM alerts WHERE alert_id = ?";
 
         try (
-            Connection conn = DBConnection.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql)
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)
         ) {
 
             ps.setInt(1, alertId);
+
             ps.executeUpdate();
 
+            if (ps.getUpdateCount() == 0) {
+                throw new RuntimeException("Alert not found.");
+            }
+
         } catch (SQLException e) {
-            throw new RuntimeException("Error deleting alert", e);
+            throw new RuntimeException("Error deleting alert.", e);
         }
     }
 }

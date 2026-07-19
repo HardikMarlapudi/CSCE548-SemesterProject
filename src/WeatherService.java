@@ -10,7 +10,7 @@ import java.util.List;
 
 public class WeatherService {
 
-    private WeatherRecordDAO dao = new WeatherRecordDAO();
+    private final WeatherRecordDAO dao = new WeatherRecordDAO();
 
     /* ===================================== */
     /* START WEATHER SERVICE                 */
@@ -63,14 +63,14 @@ public class WeatherService {
 
             if (method.equalsIgnoreCase("GET")) {
 
-                if (query != null && query.startsWith("city=")) {
+                if (query != null && query.startsWith("locationId=")) {
 
-                    String city =
-                        URLDecoder.decode(query.substring(5), "UTF-8");
-
+                    int locationId = Integer.parseInt(
+                            URLDecoder.decode(query.substring(11), "UTF-8"));
+                
                     List<WeatherRecord> results =
-                        dao.getRecordsByCity(city);
-
+                            dao.getRecordsByLocation(locationId);
+                
                     response = JsonUtil.toJson(results);
                 }
 
@@ -150,7 +150,8 @@ public class WeatherService {
                     WeatherRecord record =
                         JsonUtil.fromJson(body);
 
-                    dao.updateRecord(id, record);
+                    record.setRecordId(id);
+                    dao.updateRecord(record);
 
                     response =
                         JsonUtil.toJson(dao.getAllRecords());
@@ -168,8 +169,6 @@ public class WeatherService {
                     Integer.parseInt(path.replace("/weather/", ""));
 
                 dao.deleteRecord(id);
-
-                dao.reorderIds();
 
                 response =
                     JsonUtil.toJson(dao.getAllRecords());
@@ -199,7 +198,7 @@ public class WeatherService {
         exchange.getResponseHeaders()
                 .add("Content-Type", "application/json");
 
-        byte[] bytes = response.getBytes();
+        byte[] bytes = response.getBytes(java.nio.charset.StandardCharsets.UTF_8);
 
         exchange.sendResponseHeaders(statusCode, bytes.length);
 
@@ -254,29 +253,95 @@ public class WeatherService {
 
         public static WeatherRecord fromJson(String json) {
 
-            String cityName = extractValue(json, "cityName");
-            String stateName = extractValue(json, "stateName");
-            String conditionName = extractValue(json, "conditionName");
-
+            // Read values from JSON
+            int recordId =
+                    parseInt(extractValue(json, "recordId"));
+        
+            String city =
+                    extractValue(json, "cityName");
+        
+            String state =
+                    extractValue(json, "stateName");
+        
+            String conditionName =
+                    extractValue(json, "conditionName");
+        
             double temperature =
-                parseDouble(extractValue(json, "temperature"));
-
+                    parseDouble(extractValue(json, "temperature"));
+        
             int humidity =
-                parseInt(extractValue(json, "humidity"));
+                    parseInt(extractValue(json, "humidity"));
+        
+            java.sql.Date recordDate =
+                    java.sql.Date.valueOf(
+                            extractValue(json, "recordDate"));
+        
+            // Lookup IDs
+            LocationDAO locationDAO = new LocationDAO();
+            StationDAO stationDAO = new StationDAO();
+            WeatherConditionDAO conditionDAO = new WeatherConditionDAO();
+        
+            Location location =
+        locationDAO.getLocationByCityState(city, state);
 
-            String dateStr =
-                extractValue(json, "recordDate");
+/* Automatically create location if it doesn't exist */
+if (location == null) {
 
-            java.sql.Date recordDate = null;
+    Location newLocation =
+            new Location(
+                    0,
+                    city,
+                    state,
+                    "USA"
+            );
 
-            if (dateStr != null && !dateStr.isEmpty()) {
-                recordDate = java.sql.Date.valueOf(dateStr);
+    locationDAO.addLocation(newLocation);
+
+    System.out.println("Inserted location: " + city + ", " + state);
+
+    System.out.println(locationDAO.getAllLocations());
+
+    location =
+            locationDAO.getLocationByCityState(city, state);
+}
+
+/* Find station */
+Station station =
+        stationDAO.getStationByLocationId(
+                location.getLocationId());
+
+/* Automatically create station */
+if (station == null) {
+
+    Station newStation =
+            new Station(
+                    0,
+                    location.getLocationId(),
+                    city + " Weather Station"
+            );
+
+    stationDAO.addStation(newStation);
+
+    station =
+            stationDAO.getStationByLocationId(
+                    location.getLocationId());
+}
+        
+            WeatherCondition condition =
+                    conditionDAO.getConditionByDescription(
+                            conditionName);
+        
+            if (condition == null) {
+                throw new IllegalArgumentException(
+                        "Weather condition not found: "
+                                + conditionName);
             }
-
+        
             return new WeatherRecord(
-                    cityName,
-                    stateName,
-                    conditionName,
+                    recordId,
+                    location.getLocationId(),
+                    station.getStationId(),
+                    condition.getConditionId(),
                     temperature,
                     humidity,
                     recordDate
@@ -342,32 +407,57 @@ public class WeatherService {
         public static String toJson(List<WeatherRecord> list) {
 
             StringBuilder sb = new StringBuilder();
-
+        
             sb.append("[\n");
-
+        
             for (int i = 0; i < list.size(); i++) {
-
+        
                 WeatherRecord r = list.get(i);
-
+        
                 sb.append("  {\n")
                   .append("    \"recordId\": ").append(r.getRecordId()).append(",\n")
-                  .append("    \"cityName\": \"").append(r.getCityName()).append("\",\n")
-                  .append("    \"stateName\": \"").append(r.getStateName()).append("\",\n")
-                  .append("    \"conditionName\": \"").append(r.getConditionName()).append("\",\n")
-                  .append("    \"temperature\": ").append(r.getTemperature()).append(",\n")
-                  .append("    \"humidity\": ").append(r.getHumidity()).append(",\n")
-                  .append("    \"recordDate\": \"").append(r.getRecordDate()).append("\"\n")
+                  .append("    \"locationId\": ").append(r.getLocationId()).append(",\n")
+                  .append("    \"stationId\": ").append(r.getStationId()).append(",\n")
+                  .append("    \"conditionId\": ").append(r.getConditionId()).append(",\n")
+        
+                  .append("    \"cityName\": \"")
+                  .append(r.getCityName() == null ? "" : r.getCityName())
+                  .append("\",\n")
+        
+                  .append("    \"stateName\": \"")
+                  .append(r.getStateName() == null ? "" : r.getStateName())
+                  .append("\",\n")
+        
+                  .append("    \"stationName\": \"")
+                  .append(r.getStationName() == null ? "" : r.getStationName())
+                  .append("\",\n")
+        
+                  .append("    \"conditionName\": \"")
+                  .append(r.getConditionName() == null ? "" : r.getConditionName())
+                  .append("\",\n")
+        
+                  .append("    \"temperature\": ")
+                  .append(r.getTemperature()).append(",\n")
+        
+                  .append("    \"humidity\": ")
+                  .append(r.getHumidity()).append(",\n")
+        
+                  .append("    \"recordDate\": \"")
+                  .append(r.getRecordDate())
+                  .append("\"\n")
+        
                   .append("  }");
-
-                if (i < list.size() - 1)
+        
+                if (i < list.size() - 1) {
                     sb.append(",");
-
+                }
+        
                 sb.append("\n");
             }
-
+        
             sb.append("]");
-
+        
             return sb.toString();
         }
-    }
+    }   
 }

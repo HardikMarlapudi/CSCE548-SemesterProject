@@ -6,19 +6,21 @@ import java.util.List;
 
 public class AlertService {
 
-    private AlertDAO dao = new AlertDAO();
+    private final AlertBusiness business = new AlertBusiness();
 
-    public void startService() throws Exception {
+    public void startService() throws IOException {
 
         HttpServer server =
                 HttpServer.create(new InetSocketAddress(8082), 0);
 
         server.createContext("/alerts", this::handleRequest);
 
+        server.setExecutor(null);
+
         server.start();
 
         System.out.println(
-            "Alert Service running at http://localhost:8082/alerts");
+                "Alert Service running at http://localhost:8082/alerts");
     }
 
     private void handleRequest(HttpExchange exchange) throws IOException {
@@ -26,195 +28,285 @@ public class AlertService {
         addCORS(exchange);
 
         String method = exchange.getRequestMethod();
-        String response = "";
-        int statusCode = 200;
+
+        String response;
+
+        int status = 200;
 
         try {
 
-            // =====================
-            // OPTIONS (Preflight)
-            // =====================
             if (method.equalsIgnoreCase("OPTIONS")) {
+
                 exchange.sendResponseHeaders(204, -1);
+
                 return;
             }
 
-            // =====================
-            // GET
-            // =====================
-            if (method.equalsIgnoreCase("GET")) {
+            switch (method.toUpperCase()) {
 
-                List<Alert> alerts = dao.getAllAlerts();
+                case "GET":
 
-                response = JsonUtil.toJson(alerts);
-            }
+                    response =
+                            JsonUtil.toJson(
+                                    business.getAllAlerts());
 
-            // =====================
-            // POST
-            // =====================
-            else if (method.equalsIgnoreCase("POST")) {
+                    break;
 
-                String body = readBody(exchange);
+                case "POST":
 
-                Alert alert = JsonUtil.fromJson(body);
+                    Alert newAlert =
+                            JsonUtil.fromJson(readBody(exchange));
 
-                dao.addAlert(alert);
+                    business.addAlert(newAlert);
 
-                statusCode = 201;
-                response = "{\"message\":\"Alert added\"}";
-            }
+                    status = 201;
 
-            // =====================
-            // PUT
-            // =====================
-            else if (method.equalsIgnoreCase("PUT")) {
+                    response =
+                            "{\"message\":\"Alert created successfully.\"}";
 
-                String body = readBody(exchange);
+                    break;
 
-                Alert alert = JsonUtil.fromJson(body);
+                case "PUT":
 
-                dao.updateAlert(alert);
+                    Alert updatedAlert =
+                            JsonUtil.fromJson(readBody(exchange));
 
-                response = "{\"message\":\"Alert updated\"}";
-            }
+                    business.updateAlert(updatedAlert);
 
-            // =====================
-            // DELETE
-            // =====================
-            else if (method.equalsIgnoreCase("DELETE")) {
+                    response =
+                            "{\"message\":\"Alert updated successfully.\"}";
 
-                String query = exchange.getRequestURI().getQuery();
+                    break;
 
-                int id = Integer.parseInt(query.split("=")[1]);
+                case "DELETE":
 
-                dao.deleteAlert(id);
+                    String query =
+                            exchange.getRequestURI().getQuery();
 
-                response = "{\"message\":\"Alert deleted\"}";
-            }
+                    if (query == null || !query.startsWith("id=")) {
 
-            else {
-                statusCode = 400;
-                response = "{\"error\":\"Unsupported method\"}";
+                        throw new IllegalArgumentException(
+                                "Missing alert id.");
+
+                    }
+
+                    int id =
+                            Integer.parseInt(query.substring(3));
+
+                    business.deleteAlert(id);
+
+                    response =
+                            "{\"message\":\"Alert deleted successfully.\"}";
+
+                    break;
+
+                default:
+
+                    status = 405;
+
+                    response =
+                            "{\"error\":\"HTTP method not supported.\"}";
             }
 
         }
-        catch (Exception e) {
 
-            e.printStackTrace();
+        catch (IllegalArgumentException e) {
 
-            statusCode = 500;
-            response = "{\"error\":\"Server error\"}";
+            status = 400;
+
+            response =
+                    "{\"error\":\"" +
+                            e.getMessage() +
+                            "\"}";
+        } catch (Exception e) {
+
+                e.printStackTrace();
+            
+                status = 500;
+            
+                response =
+                    "{\"error\":\"" + e.getMessage() + "\"}";
         }
 
-        byte[] bytes = response.getBytes(StandardCharsets.UTF_8);
+        byte[] bytes =
+                response.getBytes(StandardCharsets.UTF_8);
 
-        exchange.sendResponseHeaders(statusCode, bytes.length);
+        exchange.sendResponseHeaders(status, bytes.length);
 
-        OutputStream os = exchange.getResponseBody();
-        os.write(bytes);
-        os.close();
+        try (OutputStream os =
+                     exchange.getResponseBody()) {
+
+            os.write(bytes);
+        }
     }
 
     private void addCORS(HttpExchange exchange) {
 
-        Headers headers = exchange.getResponseHeaders();
+        Headers headers =
+                exchange.getResponseHeaders();
 
         headers.add("Access-Control-Allow-Origin", "*");
-        headers.add("Access-Control-Allow-Methods",
+
+        headers.add(
+                "Access-Control-Allow-Methods",
                 "GET, POST, PUT, DELETE, OPTIONS");
-        headers.add("Access-Control-Allow-Headers", "Content-Type");
+
+        headers.add(
+                "Access-Control-Allow-Headers",
+                "Content-Type");
     }
 
-    private String readBody(HttpExchange exchange) throws IOException {
+    private String readBody(HttpExchange exchange)
+            throws IOException {
 
-        BufferedReader br =
+        BufferedReader reader =
                 new BufferedReader(
-                        new InputStreamReader(exchange.getRequestBody()));
+                        new InputStreamReader(
+                                exchange.getRequestBody(),
+                                StandardCharsets.UTF_8));
 
-        StringBuilder body = new StringBuilder();
+        StringBuilder body =
+                new StringBuilder();
+
         String line;
 
-        while ((line = br.readLine()) != null)
+        while ((line = reader.readLine()) != null) {
+
             body.append(line);
+
+        }
 
         return body.toString();
     }
 
+    // ==========================================
+    // JSON Utility
+    // ==========================================
+
     private static class JsonUtil {
 
-        public static String toJson(List<Alert> list) {
-    
-            StringBuilder sb = new StringBuilder();
-            sb.append("[\n");
-    
-            for (int i = 0; i < list.size(); i++) {
-    
-                Alert a = list.get(i);
-    
-                sb.append("  {\n")
-                  .append("    \"locationId\": ")
-                  .append(a.getLocationId())
-                  .append(",\n")
-                  .append("    \"alertType\": \"")
-                  .append(a.getAlertType())
-                  .append("\",\n")
-                  .append("    \"severity\": \"")
-                  .append(a.getSeverity())
-                  .append("\",\n")
-                  .append("    \"description\": \"")
-                  .append(a.getDescription())
-                  .append("\"\n")
-                  .append("  }");
-    
-                if (i < list.size() - 1)
-                    sb.append(",");
-    
-                sb.append("\n");
-            }
-    
-            sb.append("]");
-    
-            return sb.toString();
-        }
-    
-        public static Alert fromJson(String json) {
-    
-            int locationId = Integer.parseInt(extractValue(json, "locationId"));
-            String alertType = extractValue(json, "alertType");
-            String severity = extractValue(json, "severity");
-            String description = extractValue(json, "description");
-    
-            return new Alert(locationId, alertType, severity, description);
-        }
-    
-        private static String extractValue(String json, String key) {
-    
-            String pattern = "\"" + key + "\":";
-    
-            int start = json.indexOf(pattern);
-    
-            if (start == -1)
-                return "";
-    
-            start += pattern.length();
-    
-            // Handle numbers (locationId)
-            if (Character.isDigit(json.charAt(start))) {
-                int end = start;
-                while (end < json.length() && Character.isDigit(json.charAt(end))) {
-                    end++;
+        public static String toJson(List<Alert> alerts) {
+
+            StringBuilder json =
+                    new StringBuilder("[");
+
+            for (int i = 0; i < alerts.size(); i++) {
+
+                Alert a = alerts.get(i);
+
+                json.append("{")
+                        .append("\"alertId\":")
+                        .append(a.getAlertId())
+                        .append(",")
+
+                        .append("\"locationId\":")
+                        .append(a.getLocationId())
+                        .append(",")
+
+                        .append("\"alertType\":\"")
+                        .append(a.getAlertType())
+                        .append("\",")
+
+                        .append("\"severity\":\"")
+                        .append(a.getSeverity())
+                        .append("\",")
+
+                        .append("\"description\":\"")
+                        .append(a.getDescription())
+                        .append("\",")
+
+                        .append("\"alertDate\":\"")
+                        .append(a.getAlertDate())
+                        .append("\"")
+                        .append("}");
+
+                if (i < alerts.size() - 1) {
+
+                    json.append(",");
+
                 }
-                return json.substring(start, end);
+
             }
-    
-            // Handle strings
-            if (json.charAt(start) == '\"') {
-                start++;
-                int end = json.indexOf("\"", start);
-                return json.substring(start, end);
-            }
-    
-            return "";
+
+            json.append("]");
+
+            return json.toString();
         }
+
+        public static Alert fromJson(String json) {
+
+            int locationId =
+                    Integer.parseInt(
+                            extract(json, "locationId"));
+
+            String alertType =
+                    extract(json, "alertType");
+
+            String severity =
+                    extract(json, "severity");
+
+            String description =
+                    extract(json, "description");
+
+            String alertDate =
+                    extract(json, "alertDate");
+
+            return new Alert(
+                    locationId,
+                    alertType,
+                    severity,
+                    description,
+                    alertDate);
+        }
+
+        private static String extract(
+                String json,
+                String key) {
+
+            String search =
+                    "\"" + key + "\":";
+
+            int start =
+                    json.indexOf(search);
+
+            if (start == -1) {
+
+                return "";
+
+            }
+
+            start += search.length();
+
+            while (start < json.length()
+                    && Character.isWhitespace(json.charAt(start))) {
+
+                start++;
+
+            }
+
+            if (json.charAt(start) == '"') {
+
+                start++;
+
+                int end =
+                        json.indexOf('"', start);
+
+                return json.substring(start, end);
+
+            }
+
+            int end = start;
+
+            while (end < json.length()
+                    && Character.isDigit(json.charAt(end))) {
+
+                end++;
+
+            }
+
+            return json.substring(start, end);
+        }
+
     }
+
 }

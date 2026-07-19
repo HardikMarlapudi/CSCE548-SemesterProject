@@ -1,4 +1,8 @@
-public class Location {
+import java.io.Serializable;
+
+public class Location implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private int locationId;
     private String city;
@@ -6,26 +10,23 @@ public class Location {
     private String country;
 
     // ==========================
-    // Constructor (Secure)
+    // Required by Jackson
     // ==========================
-    public Location(int locationId, String city, String state, String country) {
+    public Location() {
+    }
 
-        if (city == null || city.isBlank()) {
-            throw new IllegalArgumentException("City cannot be empty");
-        }
+    // ==========================
+    // Constructor
+    // ==========================
+    public Location(int locationId,
+                    String city,
+                    String state,
+                    String country) {
 
-        if (state == null || state.isBlank()) {
-            throw new IllegalArgumentException("State cannot be empty");
-        }
-
-        if (country == null || country.isBlank()) {
-            throw new IllegalArgumentException("Country cannot be empty");
-        }
-
-        this.locationId = locationId;
-        this.city = city.trim();
-        this.state = state.trim();
-        this.country = country.trim();
+        setLocationId(locationId);
+        setCity(city);
+        setState(state);
+        setCountry(country);
     }
 
     // ==========================
@@ -48,16 +49,25 @@ public class Location {
     }
 
     // ==========================
-    // Setters (Secure Validation)
+    // Setters
     // ==========================
     public void setLocationId(int locationId) {
+
+        if (locationId < 0) {
+            throw new IllegalArgumentException("Invalid Location ID.");
+        }
+
         this.locationId = locationId;
     }
 
     public void setCity(String city) {
 
-        if (city == null || city.isBlank()) {
-            throw new IllegalArgumentException("City cannot be empty");
+        if (city == null || city.trim().isEmpty()) {
+            throw new IllegalArgumentException("City cannot be empty.");
+        }
+
+        if (city.length() > 100) {
+            throw new IllegalArgumentException("City name is too long.");
         }
 
         this.city = city.trim();
@@ -65,8 +75,12 @@ public class Location {
 
     public void setState(String state) {
 
-        if (state == null || state.isBlank()) {
-            throw new IllegalArgumentException("State cannot be empty");
+        if (state == null || state.trim().isEmpty()) {
+            throw new IllegalArgumentException("State cannot be empty.");
+        }
+
+        if (state.length() > 100) {
+            throw new IllegalArgumentException("State name is too long.");
         }
 
         this.state = state.trim();
@@ -74,18 +88,28 @@ public class Location {
 
     public void setCountry(String country) {
 
-        if (country == null || country.isBlank()) {
-            throw new IllegalArgumentException("Country cannot be empty");
+        if (country == null || country.trim().isEmpty()) {
+            throw new IllegalArgumentException("Country cannot be empty.");
+        }
+
+        if (country.length() > 100) {
+            throw new IllegalArgumentException("Country name is too long.");
         }
 
         this.country = country.trim();
     }
 
     // ==========================
-    // toString Override
+    // Utility
     // ==========================
     @Override
     public String toString() {
-        return locationId + ": " + city + ", " + state + ", " + country;
+
+        return "Location{" +
+                "locationId=" + locationId +
+                ", city='" + city + '\'' +
+                ", state='" + state + '\'' +
+                ", country='" + country + '\'' +
+                '}';
     }
 }

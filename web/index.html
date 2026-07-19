@@ -2,121 +2,200 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Weather Application</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Management System</title>
     <link rel="stylesheet" href="styles.css">
 </head>
-
 <body>
 
-<!-- ================================= -->
-<!-- HEADER -->
-<!-- ================================= -->
+    <header>
+        <h1>Weather Management System</h1>
 
-<header>
-    <h1>Weather Application</h1>
-    <h4>CSCE 548 – Building Secure Software</h4>
+        <p>CSCE 548 - Building Secure Software</p>
 
-    <div class="top-buttons">
-        <button onclick="loadWeatherUI()">Load Weather</button>
-        <button onclick="loadWeatherJSON()">Load Weather JSON</button>
-    </div>
-</header>
+        <div class="top-buttons">
 
-<!-- ================================= -->
-<!-- WEATHER DASHBOARD -->
-<!-- ================================= -->
+            <button onclick="loadWeatherUI()">Load Weather UI</button>
 
-<h2>Weather Dashboard</h2>
-<div id="weatherCards" class="weather-cards"></div>
+            <button onclick="loadWeatherJSON()">Load Weather JSON</button>
 
-<!-- ================================= -->
-<!-- WEATHER RECORD CRUD (KEEP THIS) -->
-<!-- ================================= -->
+            <button onclick="loadAlerts()">Load Weather Alerts</button>
 
-<section class="controls">
+        </div>
 
-    <h3>Manage Weather Records</h3>
+    </header>
 
-    <div class="form-grid">
-        <input id="recordId" placeholder="Record ID">
-        <input id="city" placeholder="City">
+    <div id="statusMessage" class="status-message"></div>
 
-        <input id="state" placeholder="State">
-        <input id="condition" placeholder="Condition">
+    <section>
 
-        <input id="temperature" placeholder="Temperature">
-        <input id="humidity" placeholder="Humidity">
+        <h2>Weather Dashboard</h2>
 
-        <input id="date" type="date">
-    </div>
+        <div id="weatherCards" class="weather-cards"></div>
 
-    <div class="buttons">
-        <button onclick="addRecord()">Add Record</button>
-        <button onclick="updateRecord()">Update Record</button>
-        <button onclick="deleteRecord()">Delete Record</button>
-    </div>
+    </section>
 
-</section>
+    <section>
 
-<hr>
+        <h2>Weather Alerts</h2>
 
-<!-- ================================= -->
-<!-- ADMIN PANEL (CLEAN + STRUCTURED) -->
-<!-- ================================= -->
+        <div id="alertCards" class="weather-cards"></div>
 
-<h2>Admin Panel</h2>
+    </section>
 
-<div class="admin-form">
 
-    <!-- SELECT TABLE -->
-    <label>Choose Table:</label>
-    <select id="adminType">
-        <option value="station">Weather Station</option>
-        <option value="location">Weather Location</option>
-        <option value="condition">Weather Condition</option>
-        <option value="alert">Weather Alert</option>
-    </select>
+    <section class="admin-panel">
 
-    <!-- LOCATION INPUTS -->
-    <input id="adminCity" placeholder="City">
-    <input id="adminState" placeholder="State">
+        <h2>Manage Weather Records</h2>
 
-    <!-- CONDITION INPUTS -->
-    <input id="adminCondition" placeholder="Condition">
-    <input id="adminTemp" placeholder="Temperature">
-    <input id="adminHumidity" placeholder="Humidity">
+        <div class="form-grid">
 
-    <!-- ALERT INPUTS -->
-    <select id="locationDropdown">
-        <option value="">Select Location</option>
-    </select>
+            <input id="recordId" placeholder="Record ID" readonly>
 
-    <select id="conditionDropdown">
-        <option value="">Select Condition</option>
-    </select>
+            <input id="city" placeholder="City">
 
-    <input id="locationInput" placeholder="Type Location (e.g. Blythewood)">
-    <input id="conditionInput" placeholder="Type Condition (e.g. Sunny)">
+            <input id="state" placeholder="State">
 
-    <input id="adminSeverity" placeholder="Alert Severity">
-    <input id="adminDescription" placeholder="Alert Description">
+            <input id="condition" placeholder="Condition">
 
-    <input id="adminDate" type="date">
+            <input id="temperature" type="number" placeholder="Temperature">
 
-    <!-- MAIN ACTION -->
-    <button onclick="handleAdminAdd()">Add Entry</button>
+            <input id="humidity" type="number" placeholder="Humidity">
 
-</div>
+            <input id="date" type="date">
 
-<!-- ================================= -->
-<!-- FOOTER -->
-<!-- ================================= -->
+        </div>
 
-<footer>
-    <p>&copy; 2026 Hardik Marlapudi. All Rights Reserved.</p>
-</footer>
+        <div class="buttons">
 
-<script src="script.js"></script>
+            <button onclick="addRecord()">Add</button>
 
+            <button onclick="updateRecord()">Update</button>
+
+            <button onclick="deleteRecord()">Delete</button>
+
+            <button onclick="clearWeatherForm()">Clear</button>
+
+        </div>
+
+    </section>
+
+    <div class="controls">
+
+        <h2>Administrative Panel</h2>
+
+        <label>
+
+            Choose Table
+
+        </label>
+
+        <select id="adminType" onchange="changeAdminSection()">
+            
+            <option value="station">
+                Weather Station
+            </option>
+
+            <option value="location">
+                Weather Location
+            </option>
+
+            <option value="condition">
+                Weather Condition
+            </option>
+
+            <option value="alert">
+                Weather Alert
+            </option>
+
+        </select>
+
+        <div id="stationSection" class="admin-section">
+
+            <h3>Weather Station</h3>
+
+            <input id="adminCity" placeholder="City">
+
+            <input id="adminState" placeholder="State">
+
+            <input id="adminStationName" placeholder="Station Name">
+
+            <button onclick="handleAdminAction()">
+                Add Station
+            </button>
+
+        </div>
+
+        <div id="locationSection" class="admin-section" style="display:none;">
+
+            <h3>Weather Location</h3>
+
+            <input id="locationInput" placeholder="Location Name">
+
+            <input id="locationCity" placeholder="City">
+
+            <input id="locationState" placeholder="State">
+
+            <button onclick="addLocation()">
+                Add Location
+            </button>
+
+        </div>
+
+        <div id="conditionSection" class="admin-section" style="display:none;">
+
+            <h3>Weather Condition</h3>
+
+            <input id="adminCondition" placeholder="Condition">
+
+            <input id="adminHumidity" type="number" placeholder="Humidity">
+
+            <input id="adminTemp" type="number" placeholder="Temperature">
+
+            <button onclick="addCondition()">Add Condition</button>
+
+        </div>
+
+            <div id="alertSection" class="admin-section" style="display:none;">
+
+                <h3>Weather Alert</h3>
+
+                <select id="locationDropdown">
+
+                    <option value="">
+                        Select Location
+                    </option>
+
+                </select>
+
+                <select id="conditionDropdown">
+
+                    <option value="">
+                        Select Condition
+                    </option>
+
+                </select>
+
+                <input id="adminSeverity" placeholder="Severity">
+
+                <input id="adminDescription" placeholder="Description">
+
+                <input id="alertDate" type="date">
+
+                <button onclick="addAlert()">
+                    Create Alert
+                </button>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <footer>
+        &copy; 2026 Hardik Marlapudi. All rights reserved.
+    </footer>
+
+    <script src="script.js"></script>
 </body>
 </html>

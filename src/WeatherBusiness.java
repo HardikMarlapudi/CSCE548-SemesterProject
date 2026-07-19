@@ -2,18 +2,42 @@ import java.util.List;
 
 public class WeatherBusiness {
 
-    private WeatherRecordDAO weatherDAO = new WeatherRecordDAO();
+    private final WeatherRecordDAO weatherDAO = new WeatherRecordDAO();
 
     // =====================
-    // READ
+    // READ ALL
     // =====================
     public List<WeatherRecord> getAllWeatherRecords() {
 
-        try {
-            return weatherDAO.getAllRecords();
-        } catch (Exception e) {
-            throw new RuntimeException("Unable to load weather records");
+        return weatherDAO.getAllRecords();
+    }
+
+    // =====================
+    // READ BY ID
+    // =====================
+    public WeatherRecord getWeatherRecordById(int recordId) {
+
+        if (recordId <= 0) {
+            throw new IllegalArgumentException(
+                    "Invalid weather record ID."
+            );
         }
+
+        return weatherDAO.getRecordById(recordId);
+    }
+
+    // =====================
+    // READ BY LOCATION
+    // =====================
+    public List<WeatherRecord> getWeatherRecordsByLocation(int locationId) {
+
+        if (locationId <= 0) {
+            throw new IllegalArgumentException(
+                    "Invalid location ID."
+            );
+        }
+
+        return weatherDAO.getRecordsByLocation(locationId);
     }
 
     // =====================
@@ -21,70 +45,97 @@ public class WeatherBusiness {
     // =====================
     public void addWeatherRecord(WeatherRecord record) {
 
-        validateRecord(record);
+        validateWeather(record);
 
-        try {
-            weatherDAO.addRecord(record);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to add weather record");
-        }
+        weatherDAO.addRecord(record);
     }
 
     // =====================
-    // EDIT
+    // UPDATE
     // =====================
+    public void updateWeatherRecord(WeatherRecord record) {
 
-    public void updateWeatherRecord(int editId, WeatherRecord updatedRecord) {
-        validateRecord(updatedRecord);
-
-        try {
-            weatherDAO.updateRecord(editId, updatedRecord);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to update record");
+        if (record == null) {
+            throw new IllegalArgumentException(
+                    "Weather record cannot be null."
+            );
         }
+
+        if (record.getRecordId() <= 0) {
+            throw new IllegalArgumentException(
+                    "Invalid weather record ID."
+            );
+        }
+
+        validateWeather(record);
+
+        weatherDAO.updateRecord(record);
     }
 
     // =====================
     // DELETE
     // =====================
-    public void deleteWeatherRecord(int id) {
+    public void deleteWeatherRecord(int recordId) {
 
-        if (id <= 0)
-            throw new IllegalArgumentException("Invalid record ID");
-
-        try {
-            weatherDAO.deleteRecord(id);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to delete record");
+        if (recordId <= 0) {
+            throw new IllegalArgumentException(
+                    "Invalid weather record ID."
+            );
         }
+
+        weatherDAO.deleteRecord(recordId);
     }
 
     // =====================
-    // VALIDATION (Project 3 Requirement)
+    // VALIDATION
     // =====================
-    private void validateRecord(WeatherRecord record) {
+    private void validateWeather(WeatherRecord record) {
 
-        if (record == null)
-            throw new IllegalArgumentException("Record cannot be null");
+        if (record == null) {
+            throw new IllegalArgumentException(
+                    "Weather record cannot be null."
+            );
+        }
 
-        if (record.getCityName() == null ||
-            record.getCityName().trim().isEmpty())
-            throw new IllegalArgumentException("City required");
+        if (record.getLocationId() <= 0) {
+            throw new IllegalArgumentException(
+                    "A valid location is required."
+            );
+        }
 
-        if (record.getStateName() == null ||
-            record.getStateName().trim().isEmpty())
-            throw new IllegalArgumentException("Station required");
+        if (record.getStationId() <= 0) {
+            throw new IllegalArgumentException(
+                    "A valid station is required."
+            );
+        }
 
-        if (record.getConditionName() == null ||
-            record.getConditionName().trim().isEmpty())
-            throw new IllegalArgumentException("Condition required");
+        if (record.getConditionId() <= 0) {
+            throw new IllegalArgumentException(
+                    "A valid weather condition is required."
+            );
+        }
 
-        if (record.getTemperature() < -100 ||
-            record.getTemperature() > 150)
-            throw new IllegalArgumentException("Invalid temperature");
+        if (record.getTemperature() < -100
+                || record.getTemperature() > 150) {
 
-        if (record.getHumidity() < 0 ||
-            record.getHumidity() > 100)
-            throw new IllegalArgumentException("Invalid humidity");
+            throw new IllegalArgumentException(
+                    "Temperature must be between -100 and 150."
+            );
+        }
+
+        if (record.getHumidity() < 0
+                || record.getHumidity() > 100) {
+
+            throw new IllegalArgumentException(
+                    "Humidity must be between 0 and 100."
+            );
+        }
+
+        if (record.getRecordDate() == null) {
+
+            throw new IllegalArgumentException(
+                    "Record date is required."
+            );
+        }
     }
 }

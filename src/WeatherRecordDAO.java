@@ -2,234 +2,356 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/*
- * WeatherRecordDAO
- * Handles all database operations for Weather Records
- */
-
 public class WeatherRecordDAO {
 
-    /* =====================================
-       READ ALL WEATHER RECORDS
-       ===================================== */
+    // =====================
+    // CREATE
+    // =====================
+    public void addRecord(WeatherRecord record) {
 
-    public List<WeatherRecord> getAllRecords() throws Exception {
+        String sql = """
+        INSERT INTO weather_records
+        (location_id,
+         station_id,
+         condition_id,
+         temperature,
+         humidity,
+         record_date)
+        VALUES (?, ?, ?, ?, ?, ?)
+        """;
 
-        List<WeatherRecord> list = new ArrayList<>();
+        try (
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)
+        ) {
 
-        String sql =
-            "SELECT record_id, city_name, state_name, condition_name, " +
-            "temperature, humidity, record_date " +
-            "FROM weather_records ORDER BY record_id ASC";
+            ps.setInt(1, record.getLocationId());
+            ps.setInt(2, record.getStationId());
+            ps.setInt(3, record.getConditionId());
+            ps.setDouble(4, record.getTemperature());
+            ps.setInt(5, record.getHumidity());
+            ps.setDate(6, record.getRecordDate());
 
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+            ps.executeUpdate();
+
+        }
+
+        catch (SQLException e) {
+
+            throw new RuntimeException(
+                    "Failed to add weather record.",
+                    e
+            );
+
+        }
+
+    }
+
+    // =====================
+    // READ ALL
+    // =====================
+    public List<WeatherRecord> getAllRecords() {
+
+        List<WeatherRecord> records = new ArrayList<>();
+
+        String sql = """
+        SELECT
+            wr.record_id,
+            wr.location_id,
+            wr.station_id,
+            wr.condition_id,
+            l.city,
+            l.state,
+            s.station_name,
+            wc.description AS condition_name,
+            wr.temperature,
+            wr.humidity,
+            wr.record_date
+        FROM weather_records wr
+        JOIN locations l
+            ON wr.location_id = l.location_id
+        JOIN stations s
+            ON wr.station_id = s.station_id
+        JOIN weather_conditions wc
+            ON wr.condition_id = wc.condition_id
+        ORDER BY wr.record_id
+        """;
+
+        try (
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()
+        ) {
 
             while (rs.next()) {
 
                 WeatherRecord record = new WeatherRecord(
-                        rs.getString("city_name"),
-                        rs.getString("state_name"),
-                        rs.getString("condition_name"),
-                        rs.getDouble("temperature"),
-                        rs.getInt("humidity"),
-                        rs.getDate("record_date")
-                );
+                    rs.getInt("record_id"),
+                    rs.getInt("location_id"),
+                    rs.getInt("station_id"),
+                    rs.getInt("condition_id"),
+                    rs.getDouble("temperature"),
+                    rs.getInt("humidity"),
+                    rs.getDate("record_date")
+            );
+            
+            record.setCityName(rs.getString("city"));
+            record.setStateName(rs.getString("state"));
+            record.setStationName(rs.getString("station_name"));
+            record.setConditionName(rs.getString("condition_name"));
+            
+            records.add(record);
 
-                record.setRecordId(rs.getInt("record_id"));
-
-                list.add(record);
             }
+
         }
 
-        return list;
+        catch (SQLException e) {
+
+            throw new RuntimeException(
+                    "Failed to retrieve weather records.",
+                    e
+            );
+
+        }
+
+        return records;
     }
 
-    /* =====================================
-       READ RECORD BY ID
-       ===================================== */
+    // =====================
+    // READ BY ID
+    // =====================
+    public WeatherRecord getRecordById(int recordId) {
 
-    public WeatherRecord getRecordById(int id) throws Exception {
+        if (recordId <= 0) {
 
-        if (id <= 0)
-            return null;
+            throw new IllegalArgumentException(
+                    "Invalid record ID."
+            );
 
-        String sql =
-            "SELECT record_id, city_name, state_name, condition_name, " +
-            "temperature, humidity, record_date " +
-            "FROM weather_records WHERE record_id=?";
+        }
 
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        String sql = """
+        SELECT
+            wr.record_id,
+            wr.location_id,
+            wr.station_id,
+            wr.condition_id,
+            l.city,
+            l.state,
+            s.station_name,
+            wc.description AS condition_name,
+            wr.temperature,
+            wr.humidity,
+            wr.record_date
+        FROM weather_records wr
+        JOIN locations l
+            ON wr.location_id = l.location_id
+        JOIN stations s
+            ON wr.station_id = s.station_id
+        JOIN weather_conditions wc
+            ON wr.condition_id = wc.condition_id
+        WHERE wr.record_id = ?
+        """;
 
-            ps.setInt(1, id);
+        try (
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)
+        ) {
+
+            ps.setInt(1, recordId);
 
             try (ResultSet rs = ps.executeQuery()) {
 
                 if (rs.next()) {
 
                     WeatherRecord record = new WeatherRecord(
-                            rs.getString("city_name"),
-                            rs.getString("state_name"),
-                            rs.getString("condition_name"),
-                            rs.getDouble("temperature"),
-                            rs.getInt("humidity"),
-                            rs.getDate("record_date")
-                    );
+                        rs.getInt("record_id"),
+                        rs.getInt("location_id"),
+                        rs.getInt("station_id"),
+                        rs.getInt("condition_id"),
+                        rs.getDouble("temperature"),
+                        rs.getInt("humidity"),
+                        rs.getDate("record_date")
+                );
+                
+                record.setCityName(rs.getString("city"));
+                record.setStateName(rs.getString("state"));
+                record.setStationName(rs.getString("station_name"));
+                record.setConditionName(rs.getString("condition_name"));
+                
+                return record;
 
-                    record.setRecordId(rs.getInt("record_id"));
-
-                    return record;
                 }
+
             }
+
+        } catch (SQLException e) {
+
+            throw new RuntimeException("Failed to retrieve weather record.", e);
+
         }
 
         return null;
     }
 
-    /* =====================================
-       CREATE NEW RECORD
-       ===================================== */
+    // =====================
+    // UPDATE
+    // =====================
+    public void updateRecord(WeatherRecord record) {
 
-    public void addRecord(WeatherRecord r) throws Exception {
+        String sql = """
+        UPDATE weather_records
+        SET location_id = ?,
+            station_id = ?,
+            condition_id = ?,
+            temperature = ?,
+            humidity = ?,
+            record_date = ?
+        WHERE record_id = ?
+        """;
 
-        if (r == null)
-            throw new IllegalArgumentException("Weather record cannot be null");
+        try (
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)
+        ) {
 
-        String sql =
-            "INSERT INTO weather_records " +
-            "(city_name, state_name, condition_name, temperature, humidity, record_date) " +
-            "VALUES (?, ?, ?, ?, ?, ?)";
+            ps.setInt(1, record.getLocationId());
+            ps.setInt(2, record.getStationId());
+            ps.setInt(3, record.getConditionId());
+            ps.setDouble(4, record.getTemperature());
+            ps.setInt(5, record.getHumidity());
+            ps.setDate(6, record.getRecordDate());
+            ps.setInt(7, record.getRecordId());
 
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+            int rows = ps.executeUpdate();
 
-            ps.setString(1, r.getCityName());
-            ps.setString(2, r.getStateName());
-            ps.setString(3, r.getConditionName());
-            ps.setDouble(4, r.getTemperature());
-            ps.setInt(5, r.getHumidity());
-            ps.setDate(6, r.getRecordDate());
+            if (rows == 0) {
+                throw new RuntimeException("Weather record not found.");
+            }
 
-            ps.executeUpdate();
-        }
-    }
+        } catch (SQLException e) {
 
-    /* =====================================
-       UPDATE EXISTING RECORD
-       ===================================== */
+            throw new RuntimeException("Failed to update weather record.", e);
 
-    public void updateRecord(int id, WeatherRecord r) throws Exception {
-
-        if (id <= 0 || r == null)
-            throw new IllegalArgumentException("Invalid update request");
-
-        String sql =
-            "UPDATE weather_records SET " +
-            "city_name=?, state_name=?, condition_name=?, " +
-            "temperature=?, humidity=?, record_date=? " +
-            "WHERE record_id=?";
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, r.getCityName());
-            ps.setString(2, r.getStateName());
-            ps.setString(3, r.getConditionName());
-            ps.setDouble(4, r.getTemperature());
-            ps.setInt(5, r.getHumidity());
-            ps.setDate(6, r.getRecordDate());
-            ps.setInt(7, id);
-
-            ps.executeUpdate();
-        }
-    }
-
-    /* =====================================
-       DELETE RECORD
-       ===================================== */
-
-    public void deleteRecord(int id) throws Exception {
-
-        if (id <= 0)
-            throw new IllegalArgumentException("Invalid ID");
-
-        String sql = "DELETE FROM weather_records WHERE record_id=?";
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setInt(1, id);
-
-            ps.executeUpdate();
         }
 
-        reorderIds();
     }
 
-    /* =====================================
-       REORDER IDS AFTER DELETE
-       ===================================== */
+    // =====================
+    // DELETE
+    // =====================
+    public void deleteRecord(int recordId) {
 
-    public void reorderIds() throws Exception {
+        if (recordId <= 0) {
 
-        try (Connection conn = DBConnection.getConnection();
-             Statement stmt = conn.createStatement()) {
-
-            stmt.execute("SET @count = 0");
-
-            stmt.executeUpdate(
-                "UPDATE weather_records SET record_id = (@count := @count + 1)"
+            throw new IllegalArgumentException(
+                    "Invalid record ID."
             );
 
-            stmt.execute(
-                "ALTER TABLE weather_records AUTO_INCREMENT = 1"
-            );
         }
+
+        String sql = """
+        DELETE FROM weather_records
+        WHERE record_id = ?
+        """;
+
+        try (
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)
+        ) {
+
+            ps.setInt(1, recordId);
+
+            int rows = ps.executeUpdate();
+
+            if (rows == 0) {
+                throw new RuntimeException("Weather record not found.");
+            }
+
+        } catch (SQLException e) {
+
+            throw new RuntimeException("Failed to delete weather record.", e);
+
+        }
+
     }
 
-    /* =====================================
-       READ RECORDS BY CITY
-       ===================================== */
+    // =====================
+    // READ BY LOCATION
+    // =====================
+    public List<WeatherRecord> getRecordsByLocation(int locationId) {
 
-    public List<WeatherRecord> getRecordsByCity(String city) throws Exception {
+        List<WeatherRecord> records = new ArrayList<>();
 
-        List<WeatherRecord> list = new ArrayList<>();
+        String sql = """
+        SELECT
+            wr.record_id,
+            wr.location_id,
+            wr.station_id,
+            wr.condition_id,
+            l.city,
+            l.state,
+            s.station_name,
+            wc.description AS condition_name,
+            wr.temperature,
+            wr.humidity,
+            wr.record_date
+        FROM weather_records wr
+        JOIN locations l
+            ON wr.location_id = l.location_id
+        JOIN stations s
+            ON wr.station_id = s.station_id
+        JOIN weather_conditions wc
+            ON wr.condition_id = wc.condition_id
+        WHERE wr.location_id = ?
+        ORDER BY wr.record_id
+        """;
 
-        if (city == null || city.trim().isEmpty())
-            return list;
+        try (
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)
+        ) {
 
-        String sql =
-            "SELECT record_id, city_name, state_name, condition_name, " +
-            "temperature, humidity, record_date " +
-            "FROM weather_records WHERE city_name=? ORDER BY record_id ASC";
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, city);
+            ps.setInt(1, locationId);
 
             try (ResultSet rs = ps.executeQuery()) {
 
                 while (rs.next()) {
 
                     WeatherRecord record = new WeatherRecord(
-                            rs.getString("city_name"),
-                            rs.getString("state_name"),
-                            rs.getString("condition_name"),
-                            rs.getDouble("temperature"),
-                            rs.getInt("humidity"),
-                            rs.getDate("record_date")
-                    );
+                        rs.getInt("record_id"),
+                        rs.getInt("location_id"),
+                        rs.getInt("station_id"),
+                        rs.getInt("condition_id"),
+                        rs.getDouble("temperature"),
+                        rs.getInt("humidity"),
+                        rs.getDate("record_date")
+                );
+                
+                record.setCityName(rs.getString("city"));
+                record.setStateName(rs.getString("state"));
+                record.setStationName(rs.getString("station_name"));
+                record.setConditionName(rs.getString("condition_name"));
+                
+                records.add(record);
 
-                    record.setRecordId(rs.getInt("record_id"));
-
-                    list.add(record);
                 }
+
             }
+
         }
 
-        return list;
+        catch (SQLException e) {
+
+            throw new RuntimeException(
+                    "Failed to retrieve weather records.",
+                    e
+            );
+
+        }
+
+        return records;
     }
+
 }

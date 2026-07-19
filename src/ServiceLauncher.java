@@ -1,87 +1,77 @@
-/*
- * ServiceLauncher
- * Starts all Weather Microservices in separate threads
- */
 
-public class ServiceLauncher {
+public final class ServiceLauncher {
+
+    private ServiceLauncher() {
+
+    }
 
     public static void main(String[] args) {
+        
+        System.out.println("Starting Weather management Services.");
 
-        System.out.println("====================================");
-        System.out.println("Starting Weather Microservices...");
-        System.out.println("====================================");
+        startService(
+            "Weather Service",
+            "Weather-Service-Thread",
+            () -> {
+                WeatherService service = new WeatherService();
+                service.startService();
+            });
 
-        startWeatherService();
-        startAlertService();
-        startLocationService();
+        startService(
+            "Alert Service",
+            "Alert-Service-Thread",
+            () -> {
+                AlertService service = new AlertService();
+                service.startService();
+            });
 
-        System.out.println("All services initialized.");
-    }
+        startService(
+            "Location Service",
+            "Location-Service-Thread",
+            () -> {
+                LocationService service = new LocationService();
+                service.startService();
+            });
 
-    /* ================================
-       WEATHER SERVICE
-       ================================ */
 
-    private static void startWeatherService() {
+            System.out.println();
+            System.out.println("=======================================");
+            System.out.println("All services stated successfully.");
+            System.out.println("Weather Service : http://localhost:8081/weather");
+            System.out.println("Alert Service : http://localhost:8082/alerts");
+            System.out.println("Location Service: http://localhost:8083/locations");
+            System.out.println();
+            System.out.println("Open the frontend (index.html) to begin using the application.");
+            
+        }
 
-        Thread weatherThread = new Thread(() -> {
+        private static void startService (
+            String serviceName,
+            String threadName,
+            ServiceStarter starter) {
 
-            try {
+                Thread thread = new Thread(() -> {
 
-                WeatherService weatherService = new WeatherService();
-                weatherService.startService(); // Service handles its own logging
+                    try {
+                        System.out.println("Starting " + serviceName + "...");
 
-            } catch (Exception e) {
+                        starter.start();
 
-                System.err.println("Weather Service failed to start.");
-                e.printStackTrace();
+                        System.out.println(serviceName + " started successfully.");
+                    } catch (Exception e) {
+                        System.err.println(serviceName + " failed to start.");
 
+                        e.printStackTrace();
+                    }
+                });
+
+                thread.setName(threadName);
+
+                thread.start();
             }
+        @FunctionalInterface
+            private interface ServiceStarter {
 
-        });
-
-        weatherThread.setName("Weather-Service-Thread");
-        weatherThread.start();
-    }
-
-    /* ================================
-       ALERT SERVICE
-       ================================ */
-
-    private static void startAlertService() {
-
-        Thread alertThread = new Thread(() -> {
-
-            try {
-
-                AlertService alertService = new AlertService();
-                alertService.startService(); // Service handles its own logging
-
-            } catch (Exception e) {
-
-                System.err.println("Alert Service failed to start.");
-                e.printStackTrace();
-
-            }
-
-        });
-
-        alertThread.setName("Alert-Service-Thread");
-        alertThread.start();
-    }
-
-    /* ================================
-       LOCATION SERVICE
-       ================================ */
-
-       private static void startLocationService() {
-        new Thread(() -> {
-            try {
-                LocationService locationService = new LocationService();
-                locationService.startService();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }).start();
-    }
+            void start() throws Exception;
+        }
 }
