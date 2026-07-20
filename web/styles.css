@@ -252,6 +252,48 @@ input[readonly] {
     background: #5c636a;
 }
 
+.alert-button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    justify-content: 10px;
+}
+
+.edit-alert-btn,
+.delete-alert-btn {
+    border: none;
+    border-radius: 9px;
+    padding: 10px 20px;
+    font-size: 15px;
+    font-weight: bold;
+    transition: 0.3s ease;
+    cursor: pointer;
+}
+
+.edit-alert-btn {
+    background: #2563eb;
+}
+
+.edit-alert-btn:hover {
+    background: #1d4ed8;
+    transform: translateY(-2px);
+}
+
+.delete-alert-btn {
+    background: #dc2626;
+}
+
+.delete-alert-btn:hover {
+    background: #b91c1c;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(220,38,38,.3);
+}
+
+.edit-alert-btn:active,
+.delete-alert-btn:active {
+    transform: scale(.96);
+}
+
 .admin-panel {
     background: white;
     width: 90%;

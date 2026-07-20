@@ -380,6 +380,89 @@ async function addAlert() {
 
 } 
 
+async function updateAlert() {
+
+    const alertId = document.getElementById("alertId").value;
+
+    if (!alertId) {
+        alert("Select an alert first.");
+        return;
+    }
+
+    const response = await fetch(API.alerts, {
+
+        method: "PUT",
+
+        headers: {
+            "Content-Type":"applicatioon/json"
+        },
+
+        body: JSON.stringify({
+
+            alertId: parseInt(alertId),
+
+            locationId: parseInt(
+                document.getElementById("locationDropdown").value
+            ),
+
+            alertType: "General",
+
+            severity: document.getElementById("adminSeverity").value,
+
+            description: document.getElementById("alertDescription").value,
+
+            alertDate: document.getElementById("alertDate").value
+
+        })
+
+    });
+
+    if(!response.ok) {
+        alert("Update failed.");
+        return;
+    }
+
+    clearAlertForm();
+
+    loadAlerts();
+}
+
+async function deleteAlert(id) {
+
+    const response = await fetch (
+
+        `${API.alerts}?id=${id}`,
+
+        {
+            method: "DELETE"
+        }
+
+    );
+
+    if(!response.ok) {
+        alert("Delete failed.");
+        return;
+    }
+
+    clearAlertForm();
+
+    loadAlerts();
+}
+
+function clearAlertForm() {
+
+    document.getElementById("alertId").value = "";
+
+    document.getElementById("locationDropdown").value = "";
+
+    document.getElementById("adminSeverity").value = "";
+
+    document.getElementById("adminDescription").value = "";
+
+    document.getElementById("alertDate").value = "";
+
+} 
+
 async function loadAlerts() {
     try {
         const res = await fetch(API.alerts);
@@ -427,7 +510,7 @@ function displayAlerts(alerts) {
     const container = document.getElementById("alertCards");
     container.innerHTML = "";
 
-    alerts.forEach(a => {
+    alerts.forEach(alert => {
 
         const card = document.createElement("div");
         card.className = "weather-card";
@@ -435,13 +518,42 @@ function displayAlerts(alerts) {
 
         card.innerHTML = `
             <h3>🚨 ALERT</h3>
-            <p><b>Type:</b> ${a.alertType}</p>
-            <p><b>Severity:</b> ${a.severity}</p>
-            <p>${a.description}</p>
+
+            <p><b>Type:</b> ${alert.alertType}</p>
+            <p><b>Severity:</b> ${alert.severity}</p>
+
+            <p>${alert.description}</p>
+
+            <button class="edit-alert-btn">Edit</button>
+
+            <button class="delete-alert-btn">Delete</button>
+
         `;
 
-        container.appendChild(card);
+        card.querySelector(".edit-alert-btn").onclick = () => {
+
+            document.getElementById("locationDropdown").value = alert.locationId;
+
+            document.getElementById("adminSeverity").value = alert.severity;
+
+            document.getElementById("adminDescription").value = alert.description;
+
+            document.getElementById("alertDate").value = alert.alertDate;
+
+            document.getElementById("alertId").value = alert.alertId;
+        };
+
+        card.querySelector(".delete-alert-btn").onclick = () => {
+
+            if(confirm("Delete this alert?")) {
+
+                deleteAlert(alert.alertId);
+            }
+         };
+
+         container.appendChild(card);
     });
+
 }
 
 function changeAdminSection() {
