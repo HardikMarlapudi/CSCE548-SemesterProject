@@ -264,11 +264,31 @@ input[readonly] {
     border: none;
     border-radius: 9px;
     padding: 10px 20px;
+    margin: 0.3rem;
     font-size: 15px;
     color: white;
     font-weight: bold;
     transition: 0.3s ease;
     cursor: pointer;
+    min-height: 45px;
+}
+
+@media (max-width: 768px) {
+
+    .alert-button-group {
+        display: flex;
+        gap: 7px;
+    }
+
+    .edit-alert-btn,
+    .delete-alert-btn {
+        font-size: 15px;
+        padding: 12px;
+        margin: 0.2rem;
+        flex: 1;
+        width: 100%;
+        padding: 12px 16px;
+    }
 }
 
 .edit-alert-btn {
