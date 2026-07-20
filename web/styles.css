@@ -265,6 +265,7 @@ input[readonly] {
     border-radius: 9px;
     padding: 10px 20px;
     font-size: 15px;
+    color: white;
     font-weight: bold;
     transition: 0.3s ease;
     cursor: pointer;
