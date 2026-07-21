@@ -140,4 +140,4 @@ public class Alert implements Serializable {
                 ", alertDate='" + alertDate + '\'' +
                 '}';
     }
-}
+};
