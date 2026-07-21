@@ -185,10 +185,10 @@ public class WeatherService {
         catch (Exception e) {
 
             e.printStackTrace();
-
+        
             statusCode = 500;
-
-            response = "{\"error\":\"Internal Server Error\"}";
+        
+            response = "{\"error\":\"" + e.getMessage() + "\"}";
         }
 
         /* ============================= */
