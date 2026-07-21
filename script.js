@@ -589,7 +589,7 @@ function clearWeatherForm() {
     temperature.value = "";
     humidity.value = "";
     date.value = "";
-}
+};
 
 /* ================================= */
 /* INIT */
